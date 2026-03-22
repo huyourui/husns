@@ -34,6 +34,7 @@
             <a href="<?php echo $this->url(); ?>" class="logo"><?php echo $this->escape(Setting::getSiteName()); ?></a>
             <nav class="nav">
                 <a href="<?php echo $this->url(); ?>">首页</a>
+                <a href="<?php echo $this->url('post/hot'); ?>">热门</a>
                 <a href="<?php echo $this->url('post/featured'); ?>">推荐</a>
                 <?php if (isset($_SESSION['user_id'])): ?>
                 <a href="<?php echo $this->url('user/profile'); ?>">个人中心</a>

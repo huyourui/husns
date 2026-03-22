@@ -528,6 +528,7 @@ class AdminController extends Controller
             $this->saveSettingValue('max_comment_length', $maxCommentLength);
             $this->saveSettingValue('hide_tag_admin_only', (int)Helper::post('hide_tag_admin_only', 0));
             $this->saveSettingValue('hot_topics_enabled', (int)Helper::post('hot_topics_enabled', 1));
+            $this->saveSettingValue('hot_threshold', min(10000, max(1, (int)Helper::post('hot_threshold', 20))));
             $this->saveSettingValue('registration_open', $registrationOpen);
             $this->saveSettingValue('allowed_email_suffixes', $allowedEmailSuffixes);
             $this->saveSettingValue('max_attachment_size', min(100, max(1, $maxAttachmentSize)));

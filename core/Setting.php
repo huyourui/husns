@@ -252,4 +252,9 @@ class Setting
     {
         return (int)self::get('hot_topics_enabled', 1) === 1;
     }
+
+    public static function getHotThreshold()
+    {
+        return (int)self::get('hot_threshold', 20);
+    }
 }

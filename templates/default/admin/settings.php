@@ -183,6 +183,12 @@
                     </select>
                     <small>是否在首页显示热门话题模块。关闭后首页将不显示热门话题</small>
                 </div>
+                
+                <div class="form-group">
+                    <label>热门微博热度阈值</label>
+                    <input type="number" name="hot_threshold" value="<?php echo $settings['hot_threshold'] ?? 20; ?>" min="1" max="10000" placeholder="20">
+                    <small>微博热度=转发数+评论数+点赞数+收藏数，达到此阈值的微博将在热门页面展示，默认20</small>
+                </div>
             </div>
             
             <div class="tab-content" id="tab-attachment">

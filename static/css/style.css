@@ -2728,3 +2728,62 @@ body.dark-mode .video-upload-item .progress-bar {
 body.dark-mode .video-upload-item .progress-text {
     color: #aaa;
 }
+
+.page-hot {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.page-hot .page-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.page-hot .page-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    color: #333;
+}
+
+.page-hot .page-desc {
+    margin: 0;
+    font-size: 13px;
+    color: #888;
+}
+
+.page-hot .hot-score {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: 10px;
+}
+
+.page-hot .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+body.dark-mode .page-hot {
+    background: #16213e;
+}
+
+body.dark-mode .page-hot .page-header {
+    border-bottom-color: #2d3748;
+}
+
+body.dark-mode .page-hot .page-header h2 {
+    color: #e0e0e0;
+}
+
+body.dark-mode .page-hot .page-desc {
+    color: #888;
+}
+}

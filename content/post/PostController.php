@@ -780,6 +780,82 @@ class PostController extends Controller
         Helper::jsonSuccess(['html' => $html, 'count' => count($replies)]);
     }
 
+    public function hot()
+    {
+        $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+        
+        if (!$userId && !Setting::isGuestAccessAllowed()) {
+            $this->redirect(Helper::url());
+        }
+        
+        $page = (int)Helper::get('page', 1);
+        $pageSize = Setting::getPostsPerPage();
+        $threshold = Setting::getHotThreshold();
+        
+        $offset = ($page - 1) * $pageSize;
+        
+        $sql = "SELECT p.*, u.username, u.avatar,
+                    (
+                        (SELECT COUNT(*) FROM __PREFIX__likes l WHERE l.post_id = p.id AND l.user_id != p.user_id) +
+                        (SELECT COUNT(*) FROM __PREFIX__comments c WHERE c.post_id = p.id AND c.user_id != p.user_id AND c.status = 1) +
+                        (SELECT COUNT(*) FROM __PREFIX__posts rp WHERE rp.repost_id = p.id AND rp.user_id != p.user_id AND rp.status = 1) +
+                        (SELECT COUNT(*) FROM __PREFIX__favorites f WHERE f.post_id = p.id AND f.user_id != p.user_id)
+                    ) as hot_score
+                FROM __PREFIX__posts p 
+                INNER JOIN __PREFIX__users u ON p.user_id = u.id 
+                WHERE p.status = 1 
+                HAVING hot_score >= {$threshold}
+                ORDER BY p.created_at DESC 
+                LIMIT {$offset}, {$pageSize}";
+        
+        $posts = $this->db->fetchAll($sql);
+        
+        foreach ($posts as &$post) {
+            $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
+            $post['attachments'] = is_array($post['attachments']) ? $post['attachments'] : ($post['attachments'] ? json_decode($post['attachments'], true) : []);
+            $post['videos'] = is_array($post['videos']) ? $post['videos'] : ($post['videos'] ? json_decode($post['videos'], true) : []);
+            $post['time_ago'] = Helper::formatTime($post['created_at']);
+            $post['content'] = Security::escape($post['content']);
+            $post['content'] = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $post['content']);
+            $post['content'] = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|:|$|\/\/)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $post['content']);
+            
+            if ($userId) {
+                $post['is_liked'] = $this->postModel->isLiked($post['id'], $userId);
+                $favoriteModel = new FavoriteModel();
+                $post['is_favorited'] = $favoriteModel->isFavorited($post['id'], $userId);
+            } else {
+                $post['is_liked'] = false;
+                $post['is_favorited'] = false;
+            }
+        }
+        
+        $countSql = "SELECT COUNT(*) as total FROM (
+                        SELECT p.id,
+                            (
+                                (SELECT COUNT(*) FROM __PREFIX__likes l WHERE l.post_id = p.id AND l.user_id != p.user_id) +
+                                (SELECT COUNT(*) FROM __PREFIX__comments c WHERE c.post_id = p.id AND c.user_id != p.user_id AND c.status = 1) +
+                                (SELECT COUNT(*) FROM __PREFIX__posts rp WHERE rp.repost_id = p.id AND rp.user_id != p.user_id AND rp.status = 1) +
+                                (SELECT COUNT(*) FROM __PREFIX__favorites f WHERE f.post_id = p.id AND f.user_id != p.user_id)
+                            ) as hot_score
+                        FROM __PREFIX__posts p 
+                        WHERE p.status = 1 
+                        HAVING hot_score >= {$threshold}
+                    ) as hot_posts";
+        $countResult = $this->db->fetch($countSql);
+        $total = (int)($countResult['total'] ?? 0);
+        $totalPages = ceil($total / $pageSize);
+        
+        $this->render('post/hot', [
+            'posts' => $posts,
+            'page' => $page,
+            'pageSize' => $pageSize,
+            'total' => $total,
+            'totalPages' => $totalPages,
+            'threshold' => $threshold,
+            'title' => '热门'
+        ]);
+    }
+
     public function topic()
     {
         $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
