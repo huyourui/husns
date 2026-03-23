@@ -9,7 +9,7 @@
  * @声明    严禁用于违法违规用途
  */
 define('ROOT_PATH', str_replace('\\', '/', dirname(__FILE__)) . '/');
-define('APP_VERSION', '2.1.0');
+define('APP_VERSION', '2.1.1');
 define('PHP_VERSION_MIN', '7.4.0');
 
 if (version_compare(PHP_VERSION, PHP_VERSION_MIN, '<')) {

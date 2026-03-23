@@ -1,11 +1,6 @@
 <?php
 ?>
 <div class="page-hot">
-    <div class="page-header">
-        <h2>🔥 热门动态</h2>
-        <p class="page-desc">热度达到 <?php echo $threshold; ?> 的动态将在这里展示（热度=转发+评论+点赞+收藏）</p>
-    </div>
-
     <?php if (empty($posts)): ?>
     <div class="empty-state">
         <p>暂无热门动态</p>
