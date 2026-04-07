@@ -139,24 +139,42 @@ class Helper
         self::json(['code' => $code, 'message' => $message, 'data' => null]);
     }
 
+    /**
+     * 获取客户端真实IP地址
+     * 
+     * 安全优化：
+     * - 仅在可信代理环境下读取 X-Forwarded-For
+     * - 不信任 HTTP_CLIENT_IP（可被伪造）
+     * - 验证IP格式有效性
+     * 
+     * @return string 客户端IP地址
+     */
     public static function getIp()
     {
-        $ip = '';
-        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-            $ip = trim($ips[0]);
-        } elseif (isset($_SERVER['HTTP_CLIENT_IP'])) {
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (isset($_SERVER['REMOTE_ADDR'])) {
-            $ip = $_SERVER['REMOTE_ADDR'];
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        
+        $trustedProxies = ['127.0.0.1', '::1'];
+        
+        if (defined('TRUSTED_PROXIES') && TRUSTED_PROXIES) {
+            $trustedProxies = array_merge($trustedProxies, explode(',', TRUSTED_PROXIES));
         }
         
-        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-            return $ip;
-        } elseif (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-            if ($ip === '::1') {
-                return '127.0.0.1';
+        if (in_array($ip, $trustedProxies)) {
+            if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+                $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+                $clientIp = trim($ips[0]);
+                
+                if (filter_var($clientIp, FILTER_VALIDATE_IP)) {
+                    $ip = $clientIp;
+                }
             }
+        }
+        
+        if ($ip === '::1') {
+            return '127.0.0.1';
+        }
+        
+        if (filter_var($ip, FILTER_VALIDATE_IP)) {
             return $ip;
         }
         

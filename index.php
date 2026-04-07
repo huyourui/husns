@@ -13,7 +13,7 @@
  * 定义核心常量
  */
 define('ROOT_PATH', str_replace('\\', '/', dirname(__FILE__)) . '/');
-define('APP_VERSION', '2.2.2');
+define('APP_VERSION', '2.3.0');
 define('PHP_VERSION_MIN', '7.4.0');
 
 /**
@@ -36,6 +36,40 @@ if (!file_exists(ROOT_PATH . 'install.lock')) {
  * 加载配置文件
  */
 require_once ROOT_PATH . 'config.php';
+
+/**
+ * 会话安全配置
+ * 在session_start()之前设置
+ */
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+ini_set('session.gc_maxlifetime', 7200);
+
+// HTTPS环境下启用secure cookie
+if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+    ini_set('session.cookie_secure', 1);
+}
+
+// SameSite属性（PHP 7.3+）
+if (PHP_VERSION_ID >= 70300) {
+    ini_set('session.cookie_samesite', 'Lax');
+}
+
+/**
+ * 启动会话
+ */
+session_start();
+
+/**
+ * 安全响应头
+ */
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('X-XSS-Protection: 1; mode=block');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+
+// 内容安全策略（根据实际需求调整）
+// header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'");
 
 /**
  * 定义日志路径常量（如果配置文件中未定义）

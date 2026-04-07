@@ -788,9 +788,9 @@ class PostController extends Controller
             $this->redirect(Helper::url());
         }
         
-        $page = (int)Helper::get('page', 1);
-        $pageSize = Setting::getPostsPerPage();
-        $threshold = Setting::getHotThreshold();
+        $page = max(1, (int)Helper::get('page', 1));
+        $pageSize = max(1, min(100, (int)Setting::getPostsPerPage()));
+        $threshold = max(0, (int)Setting::getHotThreshold());
         
         $offset = ($page - 1) * $pageSize;
         
@@ -804,11 +804,11 @@ class PostController extends Controller
                 FROM __PREFIX__posts p 
                 INNER JOIN __PREFIX__users u ON p.user_id = u.id 
                 WHERE p.status = 1 
-                HAVING hot_score >= {$threshold}
+                HAVING hot_score >= ?
                 ORDER BY p.created_at DESC 
-                LIMIT {$offset}, {$pageSize}";
+                LIMIT ?, ?";
         
-        $posts = $this->db->fetchAll($sql);
+        $posts = $this->db->fetchAll($sql, [$threshold, $offset, $pageSize]);
         
         foreach ($posts as &$post) {
             $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
@@ -839,9 +839,9 @@ class PostController extends Controller
                             ) as hot_score
                         FROM __PREFIX__posts p 
                         WHERE p.status = 1 
-                        HAVING hot_score >= {$threshold}
+                        HAVING hot_score >= ?
                     ) as hot_posts";
-        $countResult = $this->db->fetch($countSql);
+        $countResult = $this->db->fetch($countSql, [$threshold]);
         $total = (int)($countResult['total'] ?? 0);
         $totalPages = ceil($total / $pageSize);
         
@@ -1038,11 +1038,11 @@ class PostController extends Controller
             
             $dir = dirname($savePath);
             if (!is_dir($dir)) {
-                mkdir($dir, 0777, true);
+                mkdir($dir, 0755, true);
             }
             
             if (!is_writable($dir)) {
-                chmod($dir, 0777);
+                chmod($dir, 0755);
             }
 
             if (move_uploaded_file($file['tmp_name'], $savePath)) {
@@ -1063,6 +1063,21 @@ class PostController extends Controller
         $allowedExtensions = Setting::getAllowedAttachmentExtensions();
         $maxCount = Setting::getMaxAttachmentCount();
         
+        // 允许的MIME类型映射
+        $allowedMimeTypes = [
+            'pdf' => ['application/pdf'],
+            'doc' => ['application/msword'],
+            'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+            'xls' => ['application/vnd.ms-excel'],
+            'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            'ppt' => ['application/vnd.ms-powerpoint'],
+            'pptx' => ['application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+            'txt' => ['text/plain'],
+            'zip' => ['application/zip', 'application/x-zip-compressed'],
+            'rar' => ['application/x-rar-compressed', 'application/vnd.rar'],
+            '7z' => ['application/x-7z-compressed'],
+        ];
+        
         for ($i = 0; $i < $count && $i < $maxCount; $i++) {
             if ($files['error'][$i] !== UPLOAD_ERR_OK) {
                 continue;
@@ -1077,17 +1092,29 @@ class PostController extends Controller
             if (!in_array($ext, $allowedExtensions)) {
                 continue;
             }
+            
+            // 验证MIME类型
+            if (function_exists('finfo_open') && isset($allowedMimeTypes[$ext])) {
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mimeType = finfo_file($finfo, $files['tmp_name'][$i]);
+                finfo_close($finfo);
+                
+                if (!in_array($mimeType, $allowedMimeTypes[$ext])) {
+                    // MIME类型不匹配，跳过此文件
+                    continue;
+                }
+            }
 
             $filename = 'attachments/' . date('Ymd') . '/' . uniqid() . '.' . $ext;
             $savePath = UPLOAD_PATH . $filename;
             
             $dir = dirname($savePath);
             if (!is_dir($dir)) {
-                mkdir($dir, 0777, true);
+                mkdir($dir, 0755, true);
             }
             
             if (!is_writable($dir)) {
-                chmod($dir, 0777);
+                chmod($dir, 0755);
             }
 
             if (move_uploaded_file($files['tmp_name'][$i], $savePath)) {
@@ -1145,11 +1172,11 @@ class PostController extends Controller
             
             $dir = dirname($savePath);
             if (!is_dir($dir)) {
-                mkdir($dir, 0777, true);
+                mkdir($dir, 0755, true);
             }
             
             if (!is_writable($dir)) {
-                chmod($dir, 0777);
+                chmod($dir, 0755);
             }
 
             if (move_uploaded_file($files['tmp_name'][$i], $savePath)) {

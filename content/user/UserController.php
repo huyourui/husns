@@ -48,10 +48,14 @@ class UserController extends Controller
                 $this->redirect(Helper::url('user/login'));
             }
 
+            // 防止会话固定攻击：重新生成会话ID
+            session_regenerate_id(true);
+            
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['is_admin'] = $user['is_admin'];
             
+            // 清除管理员验证时间
             unset($_SESSION['admin_auth_time_' . $user['id']]);
 
             if ($remember) {
@@ -77,7 +81,22 @@ class UserController extends Controller
             'updated_at' => time()
         ]);
         
-        setcookie('remember_token', $userId . ':' . $token, $expires, '/', '', false, true);
+        // 使用安全的Cookie设置
+        $isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+        
+        if (PHP_VERSION_ID >= 70300) {
+            // PHP 7.3+ 支持数组形式的cookie选项
+            setcookie('remember_token', $userId . ':' . $token, [
+                'expires' => $expires,
+                'path' => '/',
+                'secure' => $isSecure,
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]);
+        } else {
+            // PHP 7.2及以下版本
+            setcookie('remember_token', $userId . ':' . $token, $expires, '/', '', $isSecure, true);
+        }
     }
 
     public function register()
