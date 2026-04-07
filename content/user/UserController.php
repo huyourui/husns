@@ -397,7 +397,7 @@ class UserController extends Controller
             ];
 
             if (isset($_FILES['avatar']) && !empty($_FILES['avatar']['tmp_name'])) {
-                $upload = $this->uploadAvatar();
+                $upload = $this->uploadAvatar($user['id'], $user['avatar'] ?? null);
                 if ($upload['success']) {
                     $data['avatar'] = $upload['path'];
                 } else {
@@ -505,7 +505,20 @@ class UserController extends Controller
         $this->redirect(Helper::url('user/profile?id=' . $targetId));
     }
 
-    private function uploadAvatar()
+    /**
+     * 上传用户头像
+     * 
+     * 优化后的存储逻辑：
+     * - 每个用户只有一个头像文件
+     * - 文件名格式：avatars/user_{用户ID}.{扩展名}
+     * - 更新头像时自动覆盖旧头像
+     * - 自动删除旧头像文件
+     * 
+     * @param int $userId 用户ID
+     * @param string|null $oldAvatar 旧头像路径
+     * @return array 上传结果
+     */
+    private function uploadAvatar($userId, $oldAvatar = null)
     {
         $maxSize = Setting::getMaxAvatarSize() * 1024 * 1024;
         
@@ -520,22 +533,54 @@ class UserController extends Controller
         }
 
         $ext = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
-        $filename = 'avatars/' . date('Ymd') . '/' . uniqid() . '.' . $ext;
-        $savePath = UPLOAD_PATH . $filename;
         
-        $dir = dirname($savePath);
-        if (!is_dir($dir)) {
-            if (!mkdir($dir, 0777, true)) {
+        $avatarDir = UPLOAD_PATH . 'avatars';
+        if (!is_dir($avatarDir)) {
+            if (!mkdir($avatarDir, 0755, true)) {
                 return ['success' => false, 'error' => '无法创建上传目录'];
             }
         }
         
-        if (!is_writable($dir)) {
-            chmod($dir, 0777);
+        if (!is_writable($avatarDir)) {
+            chmod($avatarDir, 0755);
+        }
+
+        $filename = 'avatars/user_' . $userId . '.' . $ext;
+        $savePath = UPLOAD_PATH . $filename;
+
+        if ($oldAvatar && $oldAvatar !== $filename) {
+            $oldFilePath = UPLOAD_PATH . $oldAvatar;
+            if (file_exists($oldFilePath) && strpos($oldAvatar, 'avatars/') === 0) {
+                @unlink($oldFilePath);
+                if ($this->logger) {
+                    $this->logger->debug('删除旧头像文件', ['file' => $oldFilePath]);
+                }
+            }
+        }
+
+        $possibleExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        foreach ($possibleExts as $possibleExt) {
+            if ($possibleExt !== $ext) {
+                $oldFile = UPLOAD_PATH . 'avatars/user_' . $userId . '.' . $possibleExt;
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                    if ($this->logger) {
+                        $this->logger->debug('删除旧格式头像文件', ['file' => $oldFile]);
+                    }
+                }
+            }
         }
 
         if (move_uploaded_file($_FILES['avatar']['tmp_name'], $savePath)) {
             chmod($savePath, 0644);
+            
+            if ($this->logger) {
+                $this->logger->info('用户头像上传成功', [
+                    'user_id' => $userId,
+                    'file' => $filename
+                ]);
+            }
+            
             return ['success' => true, 'path' => $filename];
         }
 
