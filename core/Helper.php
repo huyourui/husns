@@ -200,6 +200,19 @@ class Helper
         return isset($_SESSION['flash'][$type]);
     }
 
+    /**
+     * 生成用户头像HTML
+     * 
+     * 优化后的逻辑：
+     * - 优先检测头像文件是否存在
+     * - 文件不存在时自动显示首字符头像
+     * - 支持多种尺寸：small(32px)、default(48px)、large(80px) 或自定义像素值
+     * 
+     * @param string|null $avatar 头像路径
+     * @param string $username 用户名（用于生成首字符头像）
+     * @param string|int $size 尺寸：small/default/large 或像素值
+     * @return string HTML代码
+     */
     public static function avatar($avatar, $username, $size = 'default')
     {
         if (is_numeric($size)) {
@@ -217,8 +230,10 @@ class Helper
             $spanStyle = "display:inline-block;width:{$s['span']['size']};height:{$s['span']['size']};border-radius:50%;text-align:center;line-height:{$s['span']['line']};font-size:{$s['span']['font']};font-weight:500;";
         }
         
-        if ($avatar) {
-            return '<img src="' . self::uploadUrl($avatar) . '" alt="" style="' . $imgStyle . '">';
+        if ($avatar && self::avatarFileExists($avatar)) {
+            $colors = self::getAvatarColor($username);
+            $firstChar = self::getFirstChar($username);
+            return '<img src="' . self::uploadUrl($avatar) . '" alt="' . htmlspecialchars($username) . '" style="' . $imgStyle . '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'inline-block\';"><span class="avatar-default" style="' . $spanStyle . 'background:' . $colors['bg'] . ';color:' . $colors['text'] . ';display:none;">' . htmlspecialchars($firstChar) . '</span>';
         }
         
         $firstChar = self::getFirstChar($username);
@@ -227,6 +242,28 @@ class Helper
         return '<span class="avatar-default" style="' . $spanStyle . 'background:' . $colors['bg'] . ';color:' . $colors['text'] . ';">' . htmlspecialchars($firstChar) . '</span>';
     }
 
+    /**
+     * 检测头像文件是否存在
+     * 
+     * @param string $avatar 头像路径
+     * @return bool 文件是否存在
+     */
+    private static function avatarFileExists($avatar)
+    {
+        if (empty($avatar)) {
+            return false;
+        }
+        
+        $filePath = UPLOAD_PATH . $avatar;
+        return file_exists($filePath);
+    }
+
+    /**
+     * 获取用户名首字符
+     * 
+     * @param string $username 用户名
+     * @return string 首字符
+     */
     private static function getFirstChar($username)
     {
         if (empty($username)) {
@@ -235,6 +272,12 @@ class Helper
         return mb_substr($username, 0, 1, 'UTF-8');
     }
 
+    /**
+     * 根据用户名生成头像颜色
+     * 
+     * @param string $username 用户名
+     * @return array 包含背景色和文字色的数组
+     */
     private static function getAvatarColor($username)
     {
         $colors = [
