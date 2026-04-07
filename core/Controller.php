@@ -8,20 +8,72 @@
  * @license MIT
  * @声明    严禁用于违法违规用途
  */
+
+/**
+ * 控制器基类
+ * 
+ * 所有业务控制器都应继承此类，提供：
+ * - 视图渲染
+ * - 数据库访问
+ * - 日志记录
+ * - 通用辅助方法
+ * 
+ * 通过依赖注入容器获取服务实例，降低耦合度
+ */
 class Controller
 {
+    /**
+     * 视图实例
+     * @var View
+     */
     protected $view;
+
+    /**
+     * 数据库实例
+     * @var Database
+     */
     protected $db;
 
+    /**
+     * 日志实例
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
+     * 构造函数
+     * 
+     * 通过依赖注入容器获取服务实例
+     */
     public function __construct()
     {
-        $this->view = new View();
-        $this->db = Database::getInstance();
+        // 通过容器获取视图实例（如果容器中有则使用容器，否则直接创建）
+        $this->view = Container::has('view') ? Container::make('view') : new View();
+        
+        // 通过容器获取数据库实例
+        $this->db = Container::has('db') ? Container::make('db') : Database::getInstance();
+        
+        // 通过容器获取日志实例
+        $this->logger = Container::has('logger') ? Container::make('logger') : null;
     }
 
+    /**
+     * 渲染视图模板
+     * 
+     * @param string $template 模板名称
+     * @param array $data 模板数据
+     * @return void
+     */
     protected function render($template, $data = [])
     {
+        // 触发渲染前钩子
         $data = Hook::trigger('before_render', $data);
+        
+        // 记录调试日志
+        if ($this->logger) {
+            $this->logger->debug('渲染模板: ' . $template, ['data_keys' => array_keys($data)]);
+        }
+        
         echo $this->view->render($template, $data);
     }
 

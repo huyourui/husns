@@ -458,6 +458,26 @@ class Upgrade
                     KEY `created_at` (`created_at`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='收藏表'",
             ],
+            /**
+             * 版本 2.1.2 - 添加系统日志表
+             */
+            '2.1.2' => [
+                "CREATE TABLE IF NOT EXISTS `{$prefix}system_logs` (
+                    `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+                    `level` varchar(20) NOT NULL DEFAULT 'info' COMMENT '日志级别',
+                    `message` text NOT NULL COMMENT '日志消息',
+                    `context` text COMMENT '上下文数据JSON',
+                    `user_id` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '用户ID',
+                    `ip` varchar(50) NOT NULL DEFAULT '' COMMENT 'IP地址',
+                    `user_agent` varchar(500) NOT NULL DEFAULT '' COMMENT '用户代理',
+                    `request_uri` varchar(500) NOT NULL DEFAULT '' COMMENT '请求URI',
+                    `created_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '创建时间',
+                    PRIMARY KEY (`id`),
+                    KEY `level` (`level`),
+                    KEY `user_id` (`user_id`),
+                    KEY `created_at` (`created_at`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统日志表'",
+            ],
         ];
     }
 }
