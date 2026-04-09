@@ -411,27 +411,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (imageUpload) {
-        imageUpload.addEventListener('change', function() {
-            var files = this.files;
-            var maxImageCount = parseInt(this.dataset.maxCount) || 9;
-            imageCount.textContent = files.length > 0 ? '(' + files.length + '张)' : '';
-            
-            previewImages.innerHTML = '';
-            for (var i = 0; i < files.length && i < maxImageCount; i++) {
-                (function(file) {
-                    var reader = new FileReader();
-                    reader.onload = function(e) {
-                        var img = document.createElement('img');
-                        img.src = e.target.result;
-                        previewImages.appendChild(img);
-                    };
-                    reader.readAsDataURL(file);
-                })(files[i]);
-            }
-        });
-    }
-
     var attachmentUpload = document.getElementById('attachmentUpload');
     var attachmentCount = document.getElementById('attachmentCount');
     var attachmentList = document.getElementById('attachmentList');
