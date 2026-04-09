@@ -53,11 +53,7 @@
                     </div>
                     <div class="repost-content"><?php echo $post['original_post']['content']; ?></div>
                     <?php if (!empty($post['original_post']['images'])): ?>
-                    <div class="post-images">
-                        <?php foreach ($post['original_post']['images'] as $image): ?>
-                        <img src="<?php echo $this->uploadUrl($image); ?>" alt="" onclick="previewImage(this)">
-                        <?php endforeach; ?>
-                    </div>
+                    <?php echo Helper::renderImageGrid($post['original_post']['images']); ?>
                     <?php endif; ?>
                     <?php if (!empty($post['original_post']['attachments'])): ?>
                     <div class="post-attachments">
@@ -75,11 +71,7 @@
                 </div>
                 <?php elseif (empty($post['repost_id'])): ?>
                 <?php if (!empty($post['images'])): ?>
-                <div class="post-images">
-                    <?php foreach ($post['images'] as $image): ?>
-                    <img src="<?php echo $this->uploadUrl($image); ?>" alt="" onclick="previewImage(this)">
-                    <?php endforeach; ?>
-                </div>
+                <?php echo Helper::renderImageGrid($post['images']); ?>
                 <?php endif; ?>
                 <?php if (!empty($post['attachments'])): ?>
                 <div class="post-attachments">

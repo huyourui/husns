@@ -48,11 +48,7 @@
                     <?php endif; ?>
                     
                     <?php if (!empty($post['images'])): ?>
-                    <div class="post-images">
-                        <?php foreach (array_slice($post['images'], 0, 9) as $image): ?>
-                        <img src="<?php echo $this->uploadUrl($image); ?>" alt="" onclick="previewImage(this)">
-                        <?php endforeach; ?>
-                    </div>
+                    <?php echo Helper::renderImageGrid($post['images']); ?>
                     <?php endif; ?>
                     
                     <?php if (!empty($post['videos'])): ?>
