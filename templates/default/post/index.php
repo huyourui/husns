@@ -87,11 +87,7 @@
                     </div>
                     <div class="post-text"><?php echo $this->escape($pinnedPost['content']); ?></div>
                     <?php if (!empty($pinnedPost['images'])): ?>
-                    <div class="post-images">
-                        <?php foreach ($pinnedPost['images'] as $image): ?>
-                        <img src="<?php echo $this->uploadUrl($image); ?>" alt="" onclick="previewImage(this)">
-                        <?php endforeach; ?>
-                    </div>
+                    <?php echo Helper::renderImageGrid($pinnedPost['images']); ?>
                     <?php endif; ?>
                     <?php if (!empty($pinnedPost['videos'])): ?>
                     <div class="post-videos">
@@ -172,11 +168,7 @@
                             </div>
                             <div class="repost-content"><?php echo $post['original_post']['content']; ?></div>
                             <?php if (!empty($post['original_post']['images'])): ?>
-                            <div class="post-images">
-                                <?php foreach ($post['original_post']['images'] as $image): ?>
-                                <img src="<?php echo $this->uploadUrl($image); ?>" alt="" onclick="previewImage(this)">
-                                <?php endforeach; ?>
-                            </div>
+                            <?php echo Helper::renderImageGrid($post['original_post']['images']); ?>
                             <?php endif; ?>
                             <?php if (!empty($post['original_post']['videos'])): ?>
                             <div class="post-videos">
@@ -209,11 +201,7 @@
                         </div>
                         <?php elseif (empty($post['repost_id'])): ?>
                         <?php if (!empty($post['images'])): ?>
-                        <div class="post-images">
-                            <?php foreach ($post['images'] as $image): ?>
-                            <img src="<?php echo $this->uploadUrl($image); ?>" alt="" onclick="previewImage(this)">
-                            <?php endforeach; ?>
-                        </div>
+                        <?php echo Helper::renderImageGrid($post['images']); ?>
                         <?php endif; ?>
                         <?php if (!empty($post['videos'])): ?>
                         <div class="post-videos">
@@ -291,11 +279,7 @@
             </div>
             <div class="post-text"><?php echo $this->escape($pinnedPost['content']); ?></div>
             <?php if (!empty($pinnedPost['images'])): ?>
-            <div class="post-images">
-                <?php foreach ($pinnedPost['images'] as $image): ?>
-                <img src="<?php echo $this->uploadUrl($image); ?>" alt="" onclick="previewImage(this)">
-                <?php endforeach; ?>
-            </div>
+            <?php echo Helper::renderImageGrid($pinnedPost['images']); ?>
             <?php endif; ?>
             <?php if (!empty($pinnedPost['videos'])): ?>
             <div class="post-videos">
@@ -373,11 +357,7 @@
                     </div>
                     <div class="repost-content"><?php echo $post['original_post']['content']; ?></div>
                     <?php if (!empty($post['original_post']['images'])): ?>
-                    <div class="post-images">
-                        <?php foreach ($post['original_post']['images'] as $image): ?>
-                        <img src="<?php echo $this->uploadUrl($image); ?>" alt="" onclick="previewImage(this)">
-                        <?php endforeach; ?>
-                    </div>
+                    <?php echo Helper::renderImageGrid($post['original_post']['images']); ?>
                     <?php endif; ?>
                     <?php if (!empty($post['original_post']['videos'])): ?>
                     <div class="post-videos">
@@ -410,11 +390,7 @@
                 </div>
                 <?php elseif (empty($post['repost_id'])): ?>
                 <?php if (!empty($post['images'])): ?>
-                <div class="post-images">
-                    <?php foreach ($post['images'] as $image): ?>
-                    <img src="<?php echo $this->uploadUrl($image); ?>" alt="" onclick="previewImage(this)">
-                    <?php endforeach; ?>
-                </div>
+                <?php echo Helper::renderImageGrid($post['images']); ?>
                 <?php endif; ?>
                 
                 <?php if (!empty($post['videos'])): ?>

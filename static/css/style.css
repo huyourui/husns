@@ -713,6 +713,91 @@ body.dark-mode .post-item.pinned-post {
     height: auto;
 }
 
+/* 图片网格布局 - 响应式网格 */
+.image-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+    width: 100%;
+    max-width: 500px;
+}
+
+.image-row {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+}
+
+.image-row-1 .image-item {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 300px;
+}
+
+.image-row-2 .image-item {
+    width: calc(50% - 2px);
+    aspect-ratio: 1 / 1;
+}
+
+.image-row-3 .image-item {
+    width: calc(33.333% - 3px);
+    aspect-ratio: 1 / 1;
+}
+
+.image-item {
+    overflow: hidden;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    background: #f1f5f9;
+}
+
+.image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+.image-item:hover img {
+    transform: scale(1.05);
+}
+
+/* 转发框中的图片网格 */
+.repost-box .image-grid {
+    max-width: 400px;
+}
+
+.repost-box .image-row-1 .image-item {
+    max-height: 200px;
+}
+
+/* 移动端适配 */
+@media (max-width: 600px) {
+    .image-grid {
+        max-width: 100%;
+    }
+    
+    .image-row-1 .image-item {
+        max-height: 200px;
+    }
+    
+    .image-row-2 .image-item,
+    .image-row-3 .image-item {
+        aspect-ratio: 1 / 1;
+    }
+    
+    .repost-box .image-grid {
+        max-width: 100%;
+    }
+}
+
+/* 暗黑模式 */
+body.dark-mode .image-item {
+    background: #334155;
+}
+
 .post-actions {
     display: flex;
     gap: 20px;

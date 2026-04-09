@@ -335,4 +335,110 @@ class Helper
         }
         return $num;
     }
+
+    /**
+     * 计算图片网格布局
+     * 
+     * 根据图片数量自动计算最佳布局方式：
+     * - 1张：1行1张（大图）
+     * - 2张：1行2张
+     * - 3张：1行3张
+     * - 4张：2行，每行2张
+     * - 5张：第一行3张，第二行2张
+     * - 6张：2行，每行3张
+     * - 7张及以上：每行最多3张，自动换行
+     * 
+     * @param int $count 图片数量
+     * @return array 每行的图片数量数组，如 [3, 2] 表示第一行3张，第二行2张
+     */
+    public static function calculateImageGrid($count)
+    {
+        if ($count <= 0) {
+            return [];
+        }
+
+        // 特殊情况处理
+        switch ($count) {
+            case 1:
+                return [1];
+            case 2:
+                return [2];
+            case 3:
+                return [3];
+            case 4:
+                return [2, 2];
+            case 5:
+                return [3, 2];
+            case 6:
+                return [3, 3];
+            case 7:
+                return [3, 2, 2];
+            case 8:
+                return [3, 3, 2];
+            case 9:
+                return [3, 3, 3];
+        }
+
+        // 10张及以上：每行3张
+        $layouts = [];
+        $remaining = $count;
+        
+        while ($remaining > 0) {
+            if ($remaining >= 3) {
+                $layouts[] = 3;
+                $remaining -= 3;
+            } elseif ($remaining === 2) {
+                $layouts[] = 2;
+                $remaining -= 2;
+            } else {
+                $layouts[] = 1;
+                $remaining -= 1;
+            }
+        }
+
+        return $layouts;
+    }
+
+    /**
+     * 渲染图片网格HTML
+     * 
+     * 根据图片数量自动生成响应式网格布局
+     * 
+     * @param array $images 图片路径数组
+     * @param string $uploadBaseUrl 上传文件基础URL
+     * @return string HTML代码
+     */
+    public static function renderImageGrid($images, $uploadBaseUrl = '')
+    {
+        if (empty($images) || !is_array($images)) {
+            return '';
+        }
+
+        $count = count($images);
+        $layouts = self::calculateImageGrid($count);
+        
+        $html = '<div class="image-grid image-grid-' . $count . '">';
+        
+        $imageIndex = 0;
+        foreach ($layouts as $rowIndex => $cols) {
+            $html .= '<div class="image-row image-row-' . $cols . '">';
+            
+            for ($i = 0; $i < $cols && $imageIndex < $count; $i++) {
+                $image = $images[$imageIndex];
+                $imageUrl = $uploadBaseUrl ? $uploadBaseUrl . '/' . $image : self::uploadUrl($image);
+                
+                $html .= '<div class="image-item" onclick="previewImage(this.querySelector(\'img\'))">';
+                $html .= '<img src="' . htmlspecialchars($imageUrl) . '" alt="" loading="lazy">';
+                $html .= '</div>';
+                
+                $imageIndex++;
+            }
+            
+            $html .= '</div>';
+        }
+        
+        $html .= '</div>';
+        
+        return $html;
+    }
 }
