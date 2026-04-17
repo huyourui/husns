@@ -417,6 +417,12 @@ class Helper
         $count = count($images);
         $layouts = self::calculateImageGrid($count);
         
+        $allImages = [];
+        foreach ($images as $image) {
+            $allImages[] = $uploadBaseUrl ? $uploadBaseUrl . '/' . $image : self::uploadUrl($image);
+        }
+        $imagesJson = htmlspecialchars(json_encode($allImages), ENT_QUOTES, 'UTF-8');
+        
         $html = '<div class="image-grid image-grid-' . $count . '">';
         
         $imageIndex = 0;
@@ -425,9 +431,9 @@ class Helper
             
             for ($i = 0; $i < $cols && $imageIndex < $count; $i++) {
                 $image = $images[$imageIndex];
-                $imageUrl = $uploadBaseUrl ? $uploadBaseUrl . '/' . $image : self::uploadUrl($image);
+                $imageUrl = $allImages[$imageIndex];
                 
-                $html .= '<div class="image-item" onclick="previewImage(this.querySelector(\'img\'))">';
+                $html .= '<div class="image-item" onclick="previewImage(this.querySelector(\'img\'), ' . $imageIndex . ', ' . $imagesJson . ')">';
                 $html .= '<img src="' . htmlspecialchars($imageUrl) . '" alt="" loading="lazy">';
                 $html .= '</div>';
                 

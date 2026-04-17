@@ -706,20 +706,104 @@ document.addEventListener('DOMContentLoaded', function() {
     initPostTextExpand();
 });
 
-window.previewImage = function(img) {
+window.previewImage = function(img, index, images) {
+    if (!images || images.length === 0) {
+        images = [img.src];
+        index = 0;
+    }
+    
+    var currentIndex = index || 0;
+    var totalImages = images.length;
+    
     var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;cursor:pointer;';
+    overlay.className = 'image-preview-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:9999;';
+    
+    var container = document.createElement('div');
+    container.className = 'image-preview-container';
+    container.style.cssText = 'position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;';
     
     var largeImg = document.createElement('img');
-    largeImg.src = img.src;
-    largeImg.style.cssText = 'max-width:90%;max-height:90%;';
+    largeImg.className = 'preview-large-image';
+    largeImg.src = images[currentIndex];
+    largeImg.style.cssText = 'max-width:90%;max-height:90%;transition:opacity 0.2s ease;';
     
-    overlay.appendChild(largeImg);
-    overlay.onclick = function() { 
-        document.body.removeChild(overlay); 
+    var updateImage = function(newIndex) {
+        if (newIndex < 0) newIndex = totalImages - 1;
+        if (newIndex >= totalImages) newIndex = 0;
+        currentIndex = newIndex;
+        largeImg.style.opacity = '0';
+        setTimeout(function() {
+            largeImg.src = images[currentIndex];
+            largeImg.style.opacity = '1';
+        }, 100);
+        updateCounter();
+        updateNavButtons();
+    };
+    
+    var prevBtn = document.createElement('div');
+    prevBtn.className = 'preview-nav-btn preview-prev-btn';
+    prevBtn.innerHTML = '&#10094;';
+    prevBtn.style.cssText = 'position:absolute;left:20px;top:50%;transform:translateY(-50%);width:50px;height:50px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#fff;transition:background 0.2s;user-select:none;';
+    prevBtn.onmouseenter = function() { this.style.background = 'rgba(255,255,255,0.4)'; };
+    prevBtn.onmouseleave = function() { this.style.background = 'rgba(255,255,255,0.2)'; };
+    prevBtn.onclick = function(e) { e.stopPropagation(); updateImage(currentIndex - 1); };
+    
+    var nextBtn = document.createElement('div');
+    nextBtn.className = 'preview-nav-btn preview-next-btn';
+    nextBtn.innerHTML = '&#10095;';
+    nextBtn.style.cssText = 'position:absolute;right:20px;top:50%;transform:translateY(-50%);width:50px;height:50px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#fff;transition:background 0.2s;user-select:none;';
+    nextBtn.onmouseenter = function() { this.style.background = 'rgba(255,255,255,0.4)'; };
+    nextBtn.onmouseleave = function() { this.style.background = 'rgba(255,255,255,0.2)'; };
+    nextBtn.onclick = function(e) { e.stopPropagation(); updateImage(currentIndex + 1); };
+    
+    var counter = document.createElement('div');
+    counter.className = 'preview-counter';
+    counter.style.cssText = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:#fff;font-size:14px;background:rgba(0,0,0,0.5);padding:5px 15px;border-radius:15px;';
+    
+    var updateCounter = function() {
+        counter.textContent = (currentIndex + 1) + ' / ' + totalImages;
+    };
+    
+    var updateNavButtons = function() {
+        prevBtn.style.display = totalImages > 1 ? 'flex' : 'none';
+        nextBtn.style.display = totalImages > 1 ? 'flex' : 'none';
+        counter.style.display = totalImages > 1 ? 'block' : 'none';
+    };
+    
+    updateCounter();
+    
+    container.appendChild(largeImg);
+    container.appendChild(prevBtn);
+    container.appendChild(nextBtn);
+    container.appendChild(counter);
+    overlay.appendChild(container);
+    
+    var closeOverlay = function() {
+        document.removeEventListener('keydown', handleKeydown);
+        document.body.removeChild(overlay);
+    };
+    
+    var handleKeydown = function(e) {
+        if (e.key === 'Escape') {
+            closeOverlay();
+        } else if (e.key === 'ArrowLeft') {
+            updateImage(currentIndex - 1);
+        } else if (e.key === 'ArrowRight') {
+            updateImage(currentIndex + 1);
+        }
+    };
+    
+    document.addEventListener('keydown', handleKeydown);
+    
+    overlay.onclick = function(e) {
+        if (e.target === overlay || e.target === container || e.target === largeImg) {
+            closeOverlay();
+        }
     };
     
     document.body.appendChild(overlay);
+    updateNavButtons();
 }
 
 window.showReplyForm = function(parentId, replyToUserId, replyToUsername) {
