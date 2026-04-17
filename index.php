@@ -119,6 +119,7 @@ spl_autoload_register(function($class) {
         'PostController' => ROOT_PATH . 'content/post/PostController.php',
         'AdminController' => ROOT_PATH . 'admin/AdminController.php',
         'PluginController' => ROOT_PATH . 'admin/PluginController.php',
+        'UpgradeController' => ROOT_PATH . 'admin/UpgradeController.php',
         'NotificationModel' => ROOT_PATH . 'content/notification/NotificationModel.php',
         'NotificationController' => ROOT_PATH . 'content/notification/NotificationController.php',
         'AnnouncementModel' => ROOT_PATH . 'content/announcement/AnnouncementModel.php',
