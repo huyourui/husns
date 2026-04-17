@@ -44,7 +44,7 @@
                     <a href="<?php echo $this->url('post/topic?keyword=' . urlencode($topic['name'])); ?>" class="hot-topic-item" title="<?php echo $this->escape($topic['name']); ?>">
                         <span class="topic-rank rank-<?php echo $index + 1; ?>"><?php echo $index + 1; ?></span>
                         <span class="topic-name"><?php echo $this->escape($topic['name']); ?></span>
-                        <span class="topic-heat"><?php echo $topic['count']; ?>条</span>
+                        <span class="topic-heat"><?php echo $topic['count']; ?></span>
                     </a>
                     <?php endforeach; ?>
                 </div>
