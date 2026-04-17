@@ -568,10 +568,13 @@ class PostModel extends Model
         
         $result = [];
         foreach ($pinnedTopics as $pinned) {
+            $topicName = $pinned['name'];
+            $count = isset($topics[$topicName]) ? $topics[$topicName]['count'] : 0;
+            $engagement = isset($topics[$topicName]) ? $topics[$topicName]['engagement'] : 0;
             $result[] = [
-                'name' => $pinned['name'],
-                'count' => 0,
-                'engagement' => 0,
+                'name' => $topicName,
+                'count' => $count,
+                'engagement' => $engagement,
                 'is_pinned' => true
             ];
         }
