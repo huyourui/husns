@@ -10,9 +10,9 @@
  */
 class UpgradeController extends Controller
 {
-    private $giteeApiUrl = 'https://gitee.com/api/v5/repos/huyourui/husns/releases/latest';
-    private $giteeReleasesUrl = 'https://gitee.com/api/v5/repos/huyourui/husns/releases';
-    private $downloadPageUrl = 'https://gitee.com/huyourui/husns/releases';
+    private $giteeApiUrl = 'https://gitee.com/api/v5/repos/youruihu/husns/releases/latest';
+    private $giteeReleasesUrl = 'https://gitee.com/api/v5/repos/youruihu/husns/releases';
+    private $downloadPageUrl = 'https://gitee.com/youruihu/husns/releases';
     private $backupDir;
     private $tempDir;
 
