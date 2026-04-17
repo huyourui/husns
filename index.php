@@ -13,7 +13,7 @@
  * 定义核心常量
  */
 define('ROOT_PATH', str_replace('\\', '/', dirname(__FILE__)) . '/');
-define('APP_VERSION', '2.6.1');
+define('APP_VERSION', '2.7.0');
 define('PHP_VERSION_MIN', '7.4.0');
 
 /**
@@ -103,6 +103,8 @@ require_once ROOT_PATH . 'core/Mailer.php';
 require_once ROOT_PATH . 'core/Container.php';
 require_once ROOT_PATH . 'core/Logger.php';
 require_once ROOT_PATH . 'core/ExceptionHandler.php';
+require_once ROOT_PATH . 'core/Queue.php';
+require_once ROOT_PATH . 'core/ApiController.php';
 require_once ROOT_PATH . 'core/App.php';
 
 /**

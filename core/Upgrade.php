@@ -543,6 +543,48 @@ class Upgrade
                     KEY `created_at` (`created_at`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统日志表'",
             ],
+            /**
+             * 版本 2.7.0 - 添加API Token表和队列任务表
+             */
+            '2.7.0' => [
+                "CREATE TABLE IF NOT EXISTS `{$prefix}api_tokens` (
+                    `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+                    `user_id` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '用户ID',
+                    `token` varchar(64) NOT NULL DEFAULT '' COMMENT 'API Token',
+                    `name` varchar(100) NOT NULL DEFAULT '' COMMENT 'Token名称',
+                    `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '状态：0禁用 1启用',
+                    `expires_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '过期时间',
+                    `last_used_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '最后使用时间',
+                    `created_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '创建时间',
+                    PRIMARY KEY (`id`),
+                    UNIQUE KEY `token` (`token`),
+                    KEY `user_id` (`user_id`),
+                    KEY `status` (`status`),
+                    KEY `expires_at` (`expires_at`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API Token表'",
+                "CREATE TABLE IF NOT EXISTS `{$prefix}queue_jobs` (
+                    `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+                    `queue` varchar(50) NOT NULL DEFAULT 'default' COMMENT '队列名称',
+                    `job_type` varchar(50) NOT NULL DEFAULT '' COMMENT '任务类型',
+                    `payload` text COMMENT '任务数据JSON',
+                    `status` tinyint(1) NOT NULL DEFAULT 0 COMMENT '状态：0待处理 1处理中 2已完成 3失败',
+                    `priority` int(11) NOT NULL DEFAULT 0 COMMENT '优先级',
+                    `retries` int(11) NOT NULL DEFAULT 0 COMMENT '重试次数',
+                    `max_retries` int(11) NOT NULL DEFAULT 3 COMMENT '最大重试次数',
+                    `last_error` text COMMENT '最后错误信息',
+                    `available_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '可用时间',
+                    `started_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '开始时间',
+                    `reserved_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '保留时间',
+                    `finished_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '完成时间',
+                    `created_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '创建时间',
+                    PRIMARY KEY (`id`),
+                    KEY `queue` (`queue`),
+                    KEY `status` (`status`),
+                    KEY `priority` (`priority`),
+                    KEY `available_at` (`available_at`),
+                    KEY `created_at` (`created_at`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='队列任务表'",
+            ],
         ];
     }
 }

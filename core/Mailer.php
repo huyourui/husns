@@ -486,4 +486,110 @@ HTML;
             'username' => $username
         ]);
     }
+    
+    /**
+     * 异步发送邮件（推送到队列）
+     * 
+     * 使用方法：
+     *   Mailer::queue('user@example.com', '主题', '内容');
+     *   Mailer::queueTemplate('user@example.com', '主题', 'verification_code', ['code' => '1234']);
+     * 
+     * @param string|array $to 收件人
+     * @param string $subject 主题
+     * @param string $body 内容
+     * @param array $options 选项
+     * @param int $delay 延迟秒数
+     * @return int|false 任务ID或false
+     */
+    public static function queue($to, $subject, $body, $options = [], $delay = 0)
+    {
+        if (!class_exists('Queue')) {
+            return self::send($to, $subject, $body, $options);
+        }
+        
+        $payload = [
+            'to' => $to,
+            'subject' => $subject,
+            'body' => $body,
+            'options' => $options,
+            'isHtml' => $options['is_html'] ?? true
+        ];
+        
+        return Queue::later($delay, 'send_email', $payload, 'emails');
+    }
+    
+    /**
+     * 异步发送模板邮件
+     * 
+     * @param string $to 收件人
+     * @param string $subject 主题
+     * @param string $templateName 模板名称
+     * @param array $data 模板数据
+     * @param array $options 选项
+     * @param int $delay 延迟秒数
+     * @return int|false 任务ID或false
+     */
+    public static function queueTemplate($to, $subject, $templateName, $data = [], $options = [], $delay = 0)
+    {
+        $template = self::loadTemplate($templateName, $data);
+        
+        if ($template === null) {
+            return false;
+        }
+        
+        $siteName = Setting::getSiteName();
+        $subject = str_replace('{site_name}', $siteName, $subject);
+        $subject = str_replace('{sitename}', $siteName, $subject);
+        
+        return self::queue($to, $subject, $template, $options, $delay);
+    }
+    
+    /**
+     * 异步发送验证码
+     * 
+     * @param string $email 邮箱
+     * @param string $purpose 用途
+     * @param int $delay 延迟秒数
+     * @return array
+     */
+    public static function queueVerificationCode($email, $purpose = '注册', $delay = 0)
+    {
+        try {
+            $code = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+            
+            $db = Database::getInstance();
+            
+            $db->query("DELETE FROM __PREFIX__verification_codes WHERE email = :email AND purpose = :purpose", [
+                ':email' => $email,
+                ':purpose' => $purpose
+            ]);
+            
+            $expireMinutes = 10;
+            $expireTime = date('Y-m-d H:i:s', time() + $expireMinutes * 60);
+            
+            $db->insert('verification_codes', [
+                'email' => $email,
+                'code' => $code,
+                'purpose' => $purpose,
+                'expire_time' => $expireTime,
+                'created_at' => time()
+            ]);
+
+            $subject = '【' . Setting::getSiteName() . '】验证码';
+            
+            $jobId = self::queueTemplate($email, $subject, 'verification_code', [
+                'code' => $code,
+                'purpose' => $purpose,
+                'expire_minutes' => $expireMinutes
+            ], [], $delay);
+
+            if ($jobId) {
+                return ['success' => true, 'message' => '验证码已发送', 'job_id' => $jobId];
+            }
+            
+            return ['success' => false, 'message' => '验证码发送失败'];
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => '系统错误：' . $e->getMessage()];
+        }
+    }
 }

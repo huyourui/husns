@@ -19,7 +19,7 @@
 
 // 定义测试环境
 define('ROOT_PATH', str_replace('\\', '/', dirname(__DIR__)) . '/');
-define('APP_VERSION', '2.2.4');
+define('APP_VERSION', '2.7.0');
 define('LOG_PATH', ROOT_PATH . 'logs' . DIRECTORY_SEPARATOR);
 
 // 模拟配置
@@ -51,12 +51,19 @@ session_start();
 // 加载核心文件
 require_once ROOT_PATH . 'core/Helper.php';
 require_once ROOT_PATH . 'core/Security.php';
+require_once ROOT_PATH . 'core/Database.php';
 require_once ROOT_PATH . 'core/Container.php';
 require_once ROOT_PATH . 'core/Logger.php';
+require_once ROOT_PATH . 'core/Queue.php';
+require_once ROOT_PATH . 'core/View.php';
+require_once ROOT_PATH . 'core/Hook.php';
+require_once ROOT_PATH . 'core/Model.php';
+require_once ROOT_PATH . 'core/Controller.php';
 
 // 加载测试框架
 require_once __DIR__ . '/TestRunner.php';
 require_once __DIR__ . '/BasicTest.php';
+require_once __DIR__ . '/ExtendedTest.php';
 
 /**
  * 输出测试标题

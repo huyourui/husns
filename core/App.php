@@ -13,6 +13,7 @@ class App
     private $controller;
     private $action;
     private $params = [];
+    private $isApi = false;
     private $controllerMap = [
         'IndexController' => 'content/post/PostController.php',
         'UserController' => 'content/user/UserController.php',
@@ -26,6 +27,17 @@ class App
         'LinkController' => 'content/link/LinkController.php',
         'DownloadController' => 'content/download/DownloadController.php',
         'TopicController' => 'content/topic/TopicController.php',
+    ];
+    
+    /**
+     * API控制器映射
+     * @var array
+     */
+    private $apiControllerMap = [
+        'auth' => 'ApiAuthController',
+        'posts' => 'ApiPostController',
+        'comments' => 'ApiCommentController',
+        'users' => 'ApiUserController',
     ];
 
     public function run()
@@ -127,6 +139,12 @@ class App
             $this->action = 'index';
             return;
         }
+        
+        if (strpos($path, 'api/') === 0) {
+            $this->isApi = true;
+            $this->parseApiUrl($path);
+            return;
+        }
 
         $segments = explode('/', $path);
         
@@ -155,10 +173,82 @@ class App
 
         $this->params = $segments;
     }
+    
+    /**
+     * 解析API路由
+     * 
+     * RESTful风格路由：
+     * - GET    /api/posts          -> index
+     * - GET    /api/posts/1        -> show
+     * - POST   /api/posts          -> store
+     * - PUT    /api/posts/1        -> update
+     * - DELETE /api/posts/1        -> destroy
+     * 
+     * @param string $path URL路径
+     */
+    private function parseApiUrl($path)
+    {
+        $path = substr($path, 4);
+        $path = trim($path, '/');
+        
+        if (empty($path)) {
+            $this->notFound();
+        }
+        
+        $segments = explode('/', $path);
+        $resource = $segments[0];
+        
+        if (!isset($this->apiControllerMap[$resource])) {
+            $this->notFound();
+        }
+        
+        $this->controller = $this->apiControllerMap[$resource];
+        array_shift($segments);
+        
+        $method = $_SERVER['REQUEST_METHOD'];
+        $id = isset($segments[0]) && is_numeric($segments[0]) ? (int)$segments[0] : null;
+        $action = isset($segments[1]) ? $segments[1] : null;
+        
+        if ($id !== null) {
+            $_GET['id'] = $id;
+            array_shift($segments);
+        }
+        
+        if ($action !== null && !is_numeric($action)) {
+            $this->action = $action;
+            array_shift($segments);
+        } else {
+            $this->action = $this->mapMethodToAction($method, $id !== null);
+        }
+        
+        $this->params = $segments;
+    }
+    
+    /**
+     * 映射HTTP方法到控制器动作
+     * 
+     * @param string $method HTTP方法
+     * @param bool $hasId 是否有资源ID
+     * @return string 动作名称
+     */
+    private function mapMethodToAction($method, $hasId)
+    {
+        $map = [
+            'GET' => $hasId ? 'show' : 'index',
+            'POST' => 'store',
+            'PUT' => 'update',
+            'PATCH' => 'update',
+            'DELETE' => 'destroy',
+        ];
+        
+        return $map[$method] ?? 'index';
+    }
 
     private function route()
     {
-        if (isset($this->controllerMap[$this->controller])) {
+        if ($this->isApi) {
+            $file = ROOT_PATH . 'api/ApiController.php';
+        } elseif (isset($this->controllerMap[$this->controller])) {
             $file = ROOT_PATH . $this->controllerMap[$this->controller];
         } else {
             $dir = strtolower(str_replace('Controller', '', $this->controller));
