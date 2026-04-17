@@ -354,10 +354,11 @@ class UpgradeController extends Controller
     private function backupDatabase($backupPath)
     {
         $dbFile = $backupPath . DIRECTORY_SEPARATOR . 'database.sql';
-        $config = require ROOT_PATH . 'config' . DIRECTORY_SEPARATOR . 'database.php';
+        $dbName = DB_NAME;
+        $dbPrefix = DB_PREFIX;
         
         $tables = $this->db->fetchAll("SHOW TABLES");
-        $tableKey = 'Tables_in_' . $config['database'];
+        $tableKey = 'Tables_in_' . $dbName;
         
         $sql = "-- HuSNS Database Backup\n";
         $sql .= "-- Version: " . APP_VERSION . "\n";
@@ -367,7 +368,7 @@ class UpgradeController extends Controller
         
         foreach ($tables as $table) {
             $tableName = $table[$tableKey];
-            if (strpos($tableName, $config['prefix']) !== 0) {
+            if (strpos($tableName, $dbPrefix) !== 0) {
                 continue;
             }
             
@@ -577,7 +578,7 @@ class UpgradeController extends Controller
     private function applyUpdate($sourceDir)
     {
         $excludeDirs = ['backups', 'temp', 'uploads'];
-        $excludeFiles = ['.env', 'config/database.php'];
+        $excludeFiles = ['.env', 'config.php'];
         
         $this->copyDirectory($sourceDir, ROOT_PATH, $excludeDirs, $excludeFiles);
         
