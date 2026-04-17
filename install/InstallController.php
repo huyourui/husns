@@ -367,6 +367,8 @@ PHP;
               `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '状态：0删除 1正常',
               `is_pinned` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否置顶：0否 1是',
               `is_featured` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否精华：0否 1是',
+              `edit_count` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '编辑次数',
+              `edited_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '最后编辑时间',
               `ip` varchar(50) NOT NULL DEFAULT '' COMMENT '发布IP',
               `created_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '创建时间',
               `updated_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '更新时间',

@@ -219,6 +219,12 @@ php tests/run.php Helper
 
 ## 更新日志
 
+### v2.7.1 (2026-04-17)
+- 🐛 **Bug修复**
+  - 修复微博编辑功能无效的问题
+  - posts表添加缺失的 `edit_count` 和 `edited_at` 字段
+  - 数据库自动迁移添加编辑相关字段
+
 ### v2.7.0 (2026-04-17)
 - 🚀 **RESTful API接口**
   - 新增API控制器基类，支持Token认证

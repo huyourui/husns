@@ -585,6 +585,13 @@ class Upgrade
                     KEY `created_at` (`created_at`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='队列任务表'",
             ],
+            /**
+             * 版本 2.7.1 - 添加微博编辑相关字段
+             */
+            '2.7.1' => [
+                "ALTER TABLE `{$prefix}posts` ADD COLUMN `edit_count` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '编辑次数' AFTER `is_featured`",
+                "ALTER TABLE `{$prefix}posts` ADD COLUMN `edited_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '最后编辑时间' AFTER `edit_count`",
+            ],
         ];
     }
 }
