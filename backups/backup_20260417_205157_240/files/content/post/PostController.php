@@ -303,7 +303,6 @@ class PostController extends Controller
         $post['formatted_content'] = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $post['formatted_content']);
         $post['formatted_content'] = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $post['formatted_content']);
         $post['formatted_content'] = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $post['formatted_content']);
-        $post['formatted_content'] = Helper::parseEmojis($post['formatted_content']);
         
         $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
         $post['formatted_content'] = $this->postModel->parseHideContent($post['formatted_content'], $id, $userId, $post['user_id']);
@@ -819,7 +818,6 @@ class PostController extends Controller
             $post['content'] = Security::escape($post['content']);
             $post['content'] = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $post['content']);
             $post['content'] = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|:|$|\/\/)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $post['content']);
-            $post['content'] = Helper::parseEmojis($post['content']);
             
             if ($userId) {
                 $post['is_liked'] = $this->postModel->isLiked($post['id'], $userId);
