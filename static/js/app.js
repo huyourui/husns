@@ -1295,6 +1295,12 @@ window.openEditModal = function(postId) {
 };
 
 function createEditModal() {
+    var csrfToken = '';
+    var csrfInput = document.querySelector('input[name="csrf_token"]');
+    if (csrfInput) {
+        csrfToken = csrfInput.value;
+    }
+    
     var modal = document.createElement('div');
     modal.id = 'editModal';
     modal.className = 'modal';
@@ -1305,6 +1311,7 @@ function createEditModal() {
         '<span class="modal-close" onclick="closeEditModal()">&times;</span>' +
         '</div>' +
         '<form id="editForm">' +
+        '<input type="hidden" name="csrf_token" value="' + csrfToken + '">' +
         '<input type="hidden" name="id" id="editPostId">' +
         '<div class="form-group">' +
         '<textarea name="content" id="editContent" rows="5" style="width:100%;resize:vertical;padding:10px;border:1px solid #ddd;border-radius:4px;"></textarea>' +

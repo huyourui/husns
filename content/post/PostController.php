@@ -374,6 +374,10 @@ class PostController extends Controller
         if (!Helper::isPost()) {
             Helper::jsonError('请求方法错误');
         }
+        
+        if (!Helper::verifyCsrf()) {
+            Helper::jsonError('安全验证失败，请刷新页面重试');
+        }
 
         $id = (int)Helper::post('id');
         $content = trim(Helper::post('content'));
@@ -399,12 +403,25 @@ class PostController extends Controller
 
         $editCount = (int)($post['edit_count'] ?? 0) + 1;
         
-        $this->postModel->update($id, [
+        $updateData = [
             'content' => $content,
-            'edit_count' => $editCount,
-            'edited_at' => time(),
             'updated_at' => time()
-        ]);
+        ];
+        
+        try {
+            $this->db->query("SHOW COLUMNS FROM " . $this->db->table('posts') . " LIKE 'edit_count'");
+            if ($this->db->fetch()) {
+                $updateData['edit_count'] = $editCount;
+                $updateData['edited_at'] = time();
+            }
+        } catch (Exception $e) {
+        }
+        
+        $result = $this->postModel->update($id, $updateData);
+        
+        if (!$result) {
+            Helper::jsonError('更新失败，请重试');
+        }
 
         $updatedPost = $this->postModel->getPost($id, $_SESSION['user_id']);
         

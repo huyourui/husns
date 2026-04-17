@@ -133,6 +133,7 @@
             <span class="modal-close" onclick="closeEditModal()">&times;</span>
         </div>
         <form id="editForm">
+            <input type="hidden" name="csrf_token" value="<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>">
             <input type="hidden" name="id" id="editPostId">
             <div class="form-group">
                 <textarea name="content" id="editContent" rows="5" style="width:100%;resize:vertical;" placeholder="请输入内容..."></textarea>
