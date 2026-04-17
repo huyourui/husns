@@ -46,7 +46,7 @@
                     <span class="time"><?php echo $notification['time_ago']; ?></span>
                     <?php
                     $detailUrl = '';
-                    $data = json_decode($notification['data'] ?? '{}', true);
+                    $data = is_array($notification['data']) ? $notification['data'] : json_decode($notification['data'] ?? '{}', true);
                     
                     if ($notification['target_type'] == 'post' && $notification['target_id']) {
                         $detailUrl = $this->url('post/detail?id=' . $notification['target_id']);

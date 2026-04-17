@@ -191,12 +191,12 @@ class Helper
         return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     }
 
-    public static function get($key, $default = null)
+    public static function get($key, $default = '')
     {
         return isset($_GET[$key]) ? $_GET[$key] : $default;
     }
 
-    public static function post($key, $default = null)
+    public static function post($key, $default = '')
     {
         return isset($_POST[$key]) ? $_POST[$key] : $default;
     }
