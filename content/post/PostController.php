@@ -54,8 +54,16 @@ class IndexController extends Controller
         }
         
         $pinnedPost = $this->postModel->getPinnedPostForDisplay($userId ? $userId : 0);
+        if ($pinnedPost) {
+            $pinnedPost['content'] = Helper::parseEmojis($pinnedPost['content']);
+        }
         
         $posts = $this->postModel->getTimeline($page, $pageSize, $userId, $tab);
+        foreach ($posts as &$post) {
+            $post['content'] = Helper::parseEmojis($post['content']);
+        }
+        unset($post);
+        
         $totalPosts = $this->postModel->getTimelineCount($userId, $tab);
         $totalPages = ceil($totalPosts / $pageSize);
         
@@ -198,6 +206,7 @@ class PostController extends Controller
             $formattedContent = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $formattedContent);
             $formattedContent = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $formattedContent);
             $formattedContent = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $formattedContent);
+            $formattedContent = Helper::parseEmojis($formattedContent);
             
             $hideTagAdminOnly = Setting::isHideTagAdminOnly();
             $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'];
@@ -399,8 +408,14 @@ class PostController extends Controller
 
         $updatedPost = $this->postModel->getPost($id, $_SESSION['user_id']);
         
+        $formattedContent = Security::escape($updatedPost['content']);
+        $formattedContent = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $formattedContent);
+        $formattedContent = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $formattedContent);
+        $formattedContent = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $formattedContent);
+        $formattedContent = Helper::parseEmojis($formattedContent);
+        
         Helper::jsonSuccess([
-            'content' => $updatedPost['content'],
+            'content' => $formattedContent,
             'edit_count' => $editCount,
             'edited_at' => time()
         ], '编辑成功');
@@ -669,6 +684,7 @@ class PostController extends Controller
                 $formattedContent = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $formattedContent);
                 $formattedContent = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $formattedContent);
                 $formattedContent = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $formattedContent);
+                $formattedContent = Helper::parseEmojis($formattedContent);
                 $formattedContent = $this->postModel->parseHideContent($formattedContent, $postId, $_SESSION['user_id'], $post['user_id']);
                 $responseData['post_content'] = $formattedContent;
             }
@@ -877,6 +893,11 @@ class PostController extends Controller
         $pageSize = Setting::getPostsPerPage();
         
         $posts = $this->postModel->getPostsByTopic($keyword, $page, $pageSize);
+        foreach ($posts as &$post) {
+            $post['content'] = Helper::parseEmojis($post['content']);
+        }
+        unset($post);
+        
         $total = $this->postModel->countPostsByTopic($keyword);
         
         $title = '#' . $keyword . '# - 话题';
@@ -903,6 +924,11 @@ class PostController extends Controller
         $pageSize = Setting::getPostsPerPage();
         
         $posts = $this->postModel->getFeaturedPosts($page, $pageSize);
+        foreach ($posts as &$post) {
+            $post['content'] = Helper::parseEmojis($post['content']);
+        }
+        unset($post);
+        
         $total = $this->postModel->countFeaturedPosts();
         $totalPages = ceil($total / $pageSize);
         

@@ -268,7 +268,7 @@
 
 .upgrade-sections {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
 }
 
@@ -276,7 +276,7 @@
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    overflow: hidden;
+    overflow: visible;
 }
 
 .upgrade-section h3 {
@@ -444,12 +444,20 @@
 .backup-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: auto;
 }
 
 .backup-table th, .backup-table td {
-    padding: 10px;
+    padding: 12px 10px;
     text-align: left;
     border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.backup-table th:first-child, .backup-table td:first-child {
+    min-width: 200px;
+    white-space: normal;
+    word-break: break-all;
 }
 
 .backup-table th {
@@ -460,7 +468,8 @@
 
 .backup-actions-cell {
     display: flex;
-    gap: 5px;
+    gap: 8px;
+    flex-wrap: nowrap;
 }
 
 .no-backup {
@@ -541,16 +550,31 @@
 }
 
 @media (max-width: 768px) {
-    .upgrade-sections {
-        grid-template-columns: 1fr;
-    }
-    
     .version-info-card {
         flex-wrap: wrap;
     }
     
     .version-divider {
         display: none;
+    }
+    
+    .backup-table th, .backup-table td {
+        padding: 8px 5px;
+        font-size: 12px;
+    }
+    
+    .backup-table th:first-child, .backup-table td:first-child {
+        min-width: 150px;
+    }
+    
+    .btn-small {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+    
+    .backup-actions-cell {
+        flex-direction: column;
+        gap: 4px;
     }
 }
 </style>
@@ -727,7 +751,7 @@ function confirmUpgrade(autoBackup) {
 }
 
 function createBackup() {
-    showModal('创建备份', '<p>确定要创建系统备份吗？</p><p>备份包括数据库和程序文件。</p>', [
+    showModal('创建备份', '<p>确定要创建系统备份吗？</p><p>备份包括数据库和程序代码文件。</p><p style="color:#64748b;font-size:12px;">注：logs和uploads目录不会被备份</p>', [
         {text: '取消', class: 'modal-btn-cancel', onclick: 'hideModal()'},
         {text: '确认备份', class: 'modal-btn-confirm', onclick: 'confirmBackup()'}
     ]);

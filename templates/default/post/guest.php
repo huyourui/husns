@@ -139,6 +139,9 @@
             color: #64748b;
             cursor: pointer;
             transition: all 0.25s ease;
+            text-decoration: none;
+            text-align: center;
+            display: block;
         }
 
         .tab-switch-btn:hover {
@@ -714,7 +717,7 @@
                 <div class="tab-switch">
                     <button type="button" class="tab-switch-btn active" data-tab="login">登录</button>
                     <?php if ($registrationOpen): ?>
-                    <button type="button" class="tab-switch-btn" data-tab="register">注册</button>
+                    <a href="<?php echo $this->url('user/register'); ?>" class="tab-switch-btn">注册</a>
                     <?php endif; ?>
                 </div>
 

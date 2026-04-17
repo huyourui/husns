@@ -303,7 +303,7 @@ body.dark-mode .footer .copyright a:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .upload-btn {
@@ -1476,6 +1476,19 @@ body.dark-mode .image-item {
     border-bottom: none;
 }
 
+.comment-item:target, .reply-item:target {
+    background: #fffbeb;
+    border-radius: 8px;
+    padding: 10px;
+    margin: -10px;
+    animation: highlight 2s ease-out;
+}
+
+@keyframes highlight {
+    0% { background: #fef3c7; }
+    100% { background: transparent; }
+}
+
 .comment-avatar {
     margin-right: 10px;
     flex-shrink: 0;
@@ -2074,7 +2087,7 @@ body.dark-mode .btn-delete:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .publish-actions .char-counter {
@@ -2874,7 +2887,7 @@ body.dark-mode .page-hot .page-desc {
 
 .emoji-panel {
     position: absolute;
-    bottom: 100%;
+    top: 100%;
     left: 0;
     width: 350px;
     max-width: 100%;
@@ -2883,7 +2896,7 @@ body.dark-mode .page-hot .page-desc {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     z-index: 1000;
-    margin-bottom: 10px;
+    margin-top: 10px;
 }
 
 .emoji-panel-header {

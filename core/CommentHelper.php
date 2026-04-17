@@ -50,10 +50,10 @@ class CommentHelper
     public static function renderCommentItem($comment)
     {
         $username = htmlspecialchars($comment['username']);
-        $content = htmlspecialchars($comment['content']);
+        $content = Helper::parseEmojis(htmlspecialchars($comment['content']));
         $profileUrl = Helper::url('user/profile?id=' . $comment['user_id']);
         
-        $html = '<div class="comment-item" data-comment-id="' . $comment['id'] . '">';
+        $html = '<div class="comment-item" id="comment-' . $comment['id'] . '" data-comment-id="' . $comment['id'] . '">';
         $html .= '<div class="comment-avatar">' . Helper::avatar($comment['avatar'] ?? null, $comment['username'], 'small') . '</div>';
         $html .= '<div class="comment-body">';
         $html .= '<div class="comment-main">';
@@ -99,10 +99,10 @@ class CommentHelper
     public static function renderReplyItem($reply)
     {
         $username = htmlspecialchars($reply['username']);
-        $content = htmlspecialchars($reply['content']);
+        $content = Helper::parseEmojis(htmlspecialchars($reply['content']));
         $profileUrl = Helper::url('user/profile?id=' . $reply['user_id']);
         
-        $html = '<div class="reply-item" data-comment-id="' . $reply['id'] . '">';
+        $html = '<div class="reply-item" id="comment-' . $reply['id'] . '" data-comment-id="' . $reply['id'] . '">';
         $html .= '<div class="reply-avatar">' . Helper::avatar($reply['avatar'] ?? null, $reply['username'], 'small') . '</div>';
         $html .= '<div class="reply-content">';
         $html .= '<a href="' . $profileUrl . '" class="username">' . $username . '</a>';

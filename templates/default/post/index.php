@@ -85,7 +85,7 @@
                         <?php endif; ?>
                         <a href="<?php echo $this->url('post/detail?id=' . $pinnedPost['id']); ?>" class="time"><?php echo Helper::formatTime($pinnedPost['created_at']); ?></a>
                     </div>
-                    <div class="post-text"><?php echo $this->escape($pinnedPost['content']); ?></div>
+                    <div class="post-text"><?php echo $pinnedPost['content']; ?></div>
                     <?php if (!empty($pinnedPost['images'])): ?>
                     <?php echo Helper::renderImageGrid($pinnedPost['images']); ?>
                     <?php endif; ?>
@@ -277,7 +277,7 @@
                 <?php endif; ?>
                 <a href="<?php echo $this->url('post/detail?id=' . $pinnedPost['id']); ?>" class="time"><?php echo Helper::formatTime($pinnedPost['created_at']); ?></a>
             </div>
-            <div class="post-text"><?php echo $this->escape($pinnedPost['content']); ?></div>
+            <div class="post-text"><?php echo $pinnedPost['content']; ?></div>
             <?php if (!empty($pinnedPost['images'])): ?>
             <?php echo Helper::renderImageGrid($pinnedPost['images']); ?>
             <?php endif; ?>

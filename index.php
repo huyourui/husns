@@ -13,7 +13,7 @@
  * 定义核心常量
  */
 define('ROOT_PATH', str_replace('\\', '/', dirname(__FILE__)) . '/');
-define('APP_VERSION', '2.5.0');
+define('APP_VERSION', '2.6.0');
 define('PHP_VERSION_MIN', '7.4.0');
 
 /**
@@ -44,6 +44,7 @@ require_once ROOT_PATH . 'config.php';
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_strict_mode', 1);
 ini_set('session.gc_maxlifetime', 7200);
+ini_set('session.name', SESSION_NAME);
 
 // HTTPS环境下启用secure cookie
 if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
@@ -58,7 +59,9 @@ if (PHP_VERSION_ID >= 70300) {
 /**
  * 启动会话
  */
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 /**
  * 安全响应头

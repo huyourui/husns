@@ -320,70 +320,8 @@ $effectiveMaxVideoSize = min($maxVideoSize, $phpMaxSize);
     });
     
     var emojiData = {
-        default: [
-            {name: '微笑', code: 'smile', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/e3/2018new_smile_org.png'},
-            {name: '嘻嘻', code: 'tooth', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/e3/2018new_tooth_org.png'},
-            {name: '哈哈', code: 'laugh', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/19/2018new_laugh_org.png'},
-            {name: '可爱', code: 'lovely', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/9c/2018new_lovely_org.png'},
-            {name: '可怜', code: 'pity', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/a1/2018new_pity_org.png'},
-            {name: '挤眼', code: 'wink', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/43/2018new_wink_org.png'},
-            {name: '害羞', code: 'shy', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/c5/2018new_shy_org.png'},
-            {name: '闭嘴', code: 'shut', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/f6/2018new_shut_org.png'},
-            {name: '鄙视', code: 'despise', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/96/2018new_despise_org.png'},
-            {name: '爱你', code: 'love', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/f6/2018new_love_org.png'},
-            {name: '泪', code: 'cry', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/6e/2018new_cry_org.png'},
-            {name: '偷笑', code: 'titter', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/11/2018new_titter_org.png'},
-            {name: '亲亲', code: 'kiss', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/f2/2018new_kiss_org.png'},
-            {name: '生病', code: 'sick', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/1e/2018new_sick_org.png'},
-            {name: '太开心', code: 'happy', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/e7/2018new_happy_org.png'},
-            {name: '白眼', code: 'roll', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/47/2018new_roll_org.png'},
-            {name: '右哼哼', code: 'hum', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/1c/2018new_hum_org.png'},
-            {name: '左哼哼', code: 'humn', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/0c/2018new_humn_org.png'},
-            {name: '嘘', code: 'shui', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/14/2018new_shui_org.png'},
-            {name: '衰', code: 'sad', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/a3/2018new_sad_org.png'},
-            {name: '吐', code: 'vomit', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/08/2018new_vomit_org.png'},
-            {name: '哈欠', code: 'yawn', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/7c/2018new_yawn_org.png'},
-            {name: '抱抱', code: 'hug', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/1a/2018new_hug_org.png'},
-            {name: '怒', code: 'angry', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/77/2018new_angry_org.png'},
-            {name: '疑问', code: 'doubt', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/c8/2018new_doubt_org.png'},
-            {name: '馋嘴', code: 'greed', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/c3/2018new_greed_org.png'},
-            {name: '拜拜', code: 'bye', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/f7/2018new_bye_org.png'},
-            {name: '思考', code: 'think', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/30/2018new_think_org.png'},
-            {name: '汗', code: 'sweat', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/e4/2018new_sweat_org.png'},
-            {name: '打脸', code: 'slap', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/30/2018new_slap_org.png'},
-            {name: '惊恐', code: 'scare', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/e0/2018new_scare_org.png'},
-            {name: '失望', code: 'disap', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/18/2018new_disap_org.png'},
-            {name: '酷', code: 'cool', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/36/2018new_cool_org.png'},
-            {name: '厉害', code: 'good', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/40/2018new_good_org.png'},
-            {name: '弱', code: 'weak', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/8b/2018new_weak_org.png'},
-            {name: '握手', code: 'shake', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/89/2018new_shake_org.png'},
-            {name: '胜利', code: 'victory', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/8e/2018new_victory_org.png'},
-            {name: '抱拳', code: 'salute', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/aa/2018new_salute_org.png'},
-            {name: '鼓励', code: 'encour', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/5a/2018new_encour_org.png'},
-            {name: '抠鼻', code: 'nose', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/9a/2018new_nose_org.png'}
-        ],
-        hot: [
-            {name: 'doge', code: 'doge', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/a1/2018new_doge_org.png'},
-            {name: '二哈', code: 'erha', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/22/2018new_erha_org.png'},
-            {name: '喵喵', code: 'cat', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/a8/2018new_cat_org.png'},
-            {name: '笑cry', code: 'xiaoku', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/34/2018new_xiaoku_org.png'},
-            {name: '并不简单', code: 'bsj', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/28/2018new_bsj_org.png'},
-            {name: '摊手', code: 'tanshou', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/62/2018new_tanshou_org.png'},
-            {name: '跪了', code: 'gui', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/75/2018new_gui_org.png'},
-            {name: '费解', code: 'feijie', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/1e/2018new_feijie_org.png'},
-            {name: '憧憬', code: 'chongjing', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/ce/2018new_chongjing_org.png'},
-            {name: '失望', code: 'shiwang', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/ee/2018new_shiwang_org.png'},
-            {name: '悲伤', code: 'beishang', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/35/2018new_beishang_org.png'},
-            {name: '笑哭', code: 'xiaocry', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/2c/2018new_xiaocry_org.png'},
-            {name: '怒骂', code: 'numa', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/df/2018new_numa_org.png'},
-            {name: '允悲', code: 'yunbei', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/8c/2018new_yunbei_org.png'},
-            {name: '赞', code: 'zan', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/e6/2018new_zan_org.png'},
-            {name: 'no', code: 'no', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/3a/2018new_no_org.png'},
-            {name: 'ok', code: 'ok', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/b6/2018new_ok_org.png'},
-            {name: 'haha', code: 'haha', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/9a/2018new_haha_org.png'},
-            {name: 'what', code: 'what', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/f5/2018new_what_org.png'},
-            {name: '哼', code: 'heng', url: 'https://face.t.sinajs.cn/t4/appstyle/expression/ext/normal/31/2018new_heng_org.png'}
-        ],
+        default: [],
+        hot: [],
         emoji: [
             {name: '😀', code: 'grinning', url: ''},
             {name: '😃', code: 'smiley', url: ''},
@@ -457,6 +395,34 @@ $effectiveMaxVideoSize = min($maxVideoSize, $phpMaxSize);
             {name: '💝', code: 'gift_heart', url: ''}
         ]
     };
+    
+    var localEmojiMap = <?php echo json_encode(Helper::getEmojiList()); ?>;
+    var emojiBaseUrl = '<?php echo Helper::asset("emoji/"); ?>';
+    
+    var defaultEmojis = ['微笑', '嘻嘻', '哈哈', '可爱', '可怜', '挤眼', '害羞', '闭嘴', '鄙视', '爱你', '泪', '偷笑', '亲亲', '生病', '太开心', '白眼', '右哼哼', '左哼哼', '嘘', '衰', '吐', '哈欠', '抱抱', '怒', '疑问', '馋嘴', '拜拜', '思考', '汗', '打脸', '惊恐', '失望', '酷', '厉害', '弱', '握手', '胜利', '抱拳', '鼓励', '抠鼻'];
+    var hotEmojis = ['doge', '二哈', '喵喵', '笑cry', '并不简单', '摊手', '跪了', '费解', '憧憬', '悲伤', '允悲', '赞', 'no', 'ok', 'haha', '哼', '666', 'awsl', '吃瓜', '打call'];
+    
+    defaultEmojis.forEach(function(name) {
+        var code = '[' + name + ']';
+        if (localEmojiMap[code]) {
+            emojiData.default.push({
+                name: name,
+                code: code,
+                url: emojiBaseUrl + localEmojiMap[code]
+            });
+        }
+    });
+    
+    hotEmojis.forEach(function(name) {
+        var code = '[' + name + ']';
+        if (localEmojiMap[code]) {
+            emojiData.hot.push({
+                name: name,
+                code: code,
+                url: emojiBaseUrl + localEmojiMap[code]
+            });
+        }
+    });
     
     var emojiPanel = document.getElementById('emojiPanel');
     var emojiBtn = document.getElementById('emojiBtn');

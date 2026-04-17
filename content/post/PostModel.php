@@ -221,6 +221,7 @@ class PostModel extends Model
             $post['content'] = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $post['content']);
             $post['content'] = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|:|$|\/\/)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $post['content']);
             $post['content'] = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $post['content']);
+            $post['content'] = Helper::parseEmojis($post['content']);
             $post['content'] = $this->parseHideContent($post['content'], $id, $currentUserId, $post['user_id']);
         } else {
             $post = ['deleted' => true];

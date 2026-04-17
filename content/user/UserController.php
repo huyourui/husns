@@ -344,6 +344,10 @@ class UserController extends Controller
         $postModel = new PostModel();
         $page = (int)Helper::get('page', 1);
         $posts = $postModel->getUserPosts($userId, $page);
+        foreach ($posts as &$post) {
+            $post['content'] = Helper::parseEmojis($post['content']);
+        }
+        unset($post);
 
         $isSelf = $currentUserId && ($userId == $currentUserId);
         $isFollowing = $currentUserId && !$isSelf && $this->userModel->isFollowing($currentUserId, $userId);

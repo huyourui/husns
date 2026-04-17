@@ -406,7 +406,7 @@ class UpgradeController extends Controller
         $filesDir = $backupPath . DIRECTORY_SEPARATOR . 'files';
         mkdir($filesDir, 0755, true);
         
-        $excludeDirs = ['backups', 'temp', 'node_modules', '.git', 'vendor'];
+        $excludeDirs = ['backups', 'temp', 'logs', 'uploads', 'node_modules', '.git', 'vendor'];
         $excludeFiles = ['.env', '.gitignore', '.gitkeep'];
         
         $this->copyDirectory(ROOT_PATH, $filesDir, $excludeDirs, $excludeFiles);

@@ -17,11 +17,15 @@ install.lock
 # 上传文件目录
 uploads/
 
+# 备份目录
+backups/
+
 # 缓存目录
 cache/
 
 # 日志文件
 *.log
+logs/
 
 # 临时文件
 *.tmp

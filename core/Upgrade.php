@@ -22,6 +22,7 @@ class Upgrade
             }
             
             self::ensureTables($db);
+            self::ensureColumns($db);
             
             $currentVersion = self::getCurrentVersion($db);
             
@@ -42,6 +43,31 @@ class Upgrade
         }
     }
     
+    private static function ensureColumns($db)
+    {
+        self::addColumnIfNotExists($db, 'users', 'remember_token', "varchar(64) NOT NULL DEFAULT '' COMMENT '保持登录令牌' AFTER `bio`");
+        self::addColumnIfNotExists($db, 'users', 'ban_type', "tinyint(1) NOT NULL DEFAULT 0 COMMENT '限制类型：0正常 1禁言 2封禁' AFTER `status`");
+        self::addColumnIfNotExists($db, 'users', 'ban_until', "int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '限制到期时间，0表示永久' AFTER `ban_type`");
+        self::addColumnIfNotExists($db, 'users', 'ban_reason', "varchar(255) NOT NULL DEFAULT '' COMMENT '限制原因' AFTER `ban_until`");
+        self::addColumnIfNotExists($db, 'users', 'points', "int(11) NOT NULL DEFAULT 0 COMMENT '积分' AFTER `ban_reason`");
+        
+        self::addColumnIfNotExists($db, 'posts', 'repost_id', "int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '转发的原微博ID，0为原创' AFTER `images`");
+        self::addColumnIfNotExists($db, 'posts', 'repost_user_id', "int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '被转发微博的用户ID' AFTER `repost_id`");
+        self::addColumnIfNotExists($db, 'posts', 'attachments', "text COMMENT '附件JSON' AFTER `images`");
+        self::addColumnIfNotExists($db, 'posts', 'videos', "text COMMENT '视频JSON' AFTER `attachments`");
+        self::addColumnIfNotExists($db, 'posts', 'is_pinned', "tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否置顶：0否 1是' AFTER `status`");
+        self::addColumnIfNotExists($db, 'posts', 'is_featured', "tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否精华：0否 1是' AFTER `is_pinned`");
+        self::addColumnIfNotExists($db, 'posts', 'ip', "varchar(50) NOT NULL DEFAULT '' COMMENT '发布IP' AFTER `status`");
+        
+        self::addIndexIfNotExists($db, 'posts', 'is_pinned', '`is_pinned`');
+        self::addIndexIfNotExists($db, 'posts', 'is_featured', '`is_featured`');
+        self::addIndexIfNotExists($db, 'posts', 'repost_id', '`repost_id`');
+        
+        self::addColumnIfNotExists($db, 'comments', 'parent_id', "int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '父评论ID，0为一级评论' AFTER `content`");
+        self::addColumnIfNotExists($db, 'comments', 'reply_to_user_id', "int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '回复的用户ID' AFTER `parent_id`");
+        self::addIndexIfNotExists($db, 'comments', 'parent_id', '`parent_id`');
+    }
+    
     private static function ensureTables($db)
     {
         $prefix = $db->getPrefix();
@@ -54,8 +80,13 @@ class Upgrade
               `email` varchar(100) NOT NULL DEFAULT '' COMMENT '邮箱',
               `avatar` varchar(255) NOT NULL DEFAULT '' COMMENT '头像',
               `bio` varchar(255) NOT NULL DEFAULT '' COMMENT '个人简介',
+              `remember_token` varchar(64) NOT NULL DEFAULT '' COMMENT '保持登录令牌',
               `is_admin` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否管理员',
               `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '状态：0禁用 1正常',
+              `ban_type` tinyint(1) NOT NULL DEFAULT 0 COMMENT '限制类型：0正常 1禁言 2封禁',
+              `ban_until` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '限制到期时间，0表示永久',
+              `ban_reason` varchar(255) NOT NULL DEFAULT '' COMMENT '限制原因',
+              `points` int(11) NOT NULL DEFAULT 0 COMMENT '积分',
               `created_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '注册时间',
               `updated_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '更新时间',
               PRIMARY KEY (`id`),
@@ -243,6 +274,40 @@ class Upgrade
         $sql = "SHOW TABLES LIKE '{$prefix}{$table}'";
         $result = $db->fetch($sql);
         return $result !== false;
+    }
+    
+    private static function columnExists($db, $table, $column)
+    {
+        $prefix = $db->getPrefix();
+        $sql = "SHOW COLUMNS FROM `{$prefix}{$table}` LIKE '{$column}'";
+        $result = $db->fetch($sql);
+        return $result !== false;
+    }
+    
+    private static function addColumnIfNotExists($db, $table, $column, $definition)
+    {
+        if (!self::columnExists($db, $table, $column)) {
+            $prefix = $db->getPrefix();
+            $sql = "ALTER TABLE `{$prefix}{$table}` ADD COLUMN `{$column}` {$definition}";
+            try {
+                $db->query($sql);
+            } catch (Exception $e) {
+            }
+        }
+    }
+    
+    private static function addIndexIfNotExists($db, $table, $indexName, $columns)
+    {
+        $prefix = $db->getPrefix();
+        $sql = "SHOW INDEX FROM `{$prefix}{$table}` WHERE Key_name = '{$indexName}'";
+        $result = $db->fetch($sql);
+        if (!$result) {
+            $sql = "ALTER TABLE `{$prefix}{$table}` ADD INDEX `{$indexName}` ({$columns})";
+            try {
+                $db->query($sql);
+            } catch (Exception $e) {
+            }
+        }
     }
     
     private static function createVersionTable($db)

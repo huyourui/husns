@@ -44,8 +44,26 @@
                 <?php endif; ?>
                 <div class="notification-meta">
                     <span class="time"><?php echo $notification['time_ago']; ?></span>
-                    <?php if ($notification['target_type'] == 'post' && $notification['target_id']): ?>
-                    <a href="<?php echo $this->url('post/detail?id=' . $notification['target_id']); ?>" target="_blank" onclick="markAsReadAndOpen(<?php echo $notification['id']; ?>, this)">查看详情</a>
+                    <?php
+                    $detailUrl = '';
+                    $data = json_decode($notification['data'] ?? '{}', true);
+                    
+                    if ($notification['target_type'] == 'post' && $notification['target_id']) {
+                        $detailUrl = $this->url('post/detail?id=' . $notification['target_id']);
+                        if (isset($data['comment_id'])) {
+                            $detailUrl .= '#comment-' . $data['comment_id'];
+                        }
+                    } elseif ($notification['target_type'] == 'user' && $notification['target_id']) {
+                        $detailUrl = $this->url('user/profile?id=' . $notification['target_id']);
+                    } elseif ($notification['target_type'] == 'comment' && $notification['target_id']) {
+                        if (isset($data['post_id'])) {
+                            $detailUrl = $this->url('post/detail?id=' . $data['post_id'] . '#comment-' . $notification['target_id']);
+                        }
+                    }
+                    
+                    if ($detailUrl):
+                    ?>
+                    <a href="<?php echo $detailUrl; ?>" target="_blank" onclick="markAsReadAndOpen(<?php echo $notification['id']; ?>, this)">查看详情</a>
                     <?php endif; ?>
                 </div>
             </div>
