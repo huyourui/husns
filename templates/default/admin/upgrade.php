@@ -585,8 +585,30 @@ var tempFile = null;
 if (!isset($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+
+function parsePhpSize($size) {
+    $unit = preg_replace('/[^bkmgtpezy]/i', '', $size);
+    $size = preg_replace('/[^0-9\.]/', '', $size);
+    if ($unit) {
+        $size = $size * pow(1024, stripos('bkmgtpezy', $unit[0]));
+    }
+    return (int)$size;
+}
+
+$uploadMaxSize = min(
+    parsePhpSize(ini_get('upload_max_filesize')),
+    parsePhpSize(ini_get('post_max_size')),
+    100 * 1024 * 1024
+);
 ?>
 var csrfToken = '<?php echo $_SESSION['csrf_token']; ?>';
+var uploadMaxSize = <?php echo $uploadMaxSize; ?>;
+
+function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+}
 
 function checkUpdate() {
     var btn = document.querySelector('.btn-check');
@@ -642,11 +664,19 @@ document.getElementById('packageFile').addEventListener('change', function(e) {
     
     if (!file.name.endsWith('.zip')) {
         alert('请选择ZIP格式的文件');
+        e.target.value = '';
+        return;
+    }
+    
+    if (file.size > uploadMaxSize) {
+        alert('文件大小 ' + formatSize(file.size) + ' 超过服务器限制 ' + formatSize(uploadMaxSize) + '\n\n请修改PHP配置:\nupload_max_filesize = ' + '<?php echo ini_get("upload_max_filesize"); ?>' + '\npost_max_size = ' + '<?php echo ini_get("post_max_size"); ?>');
+        e.target.value = '';
         return;
     }
     
     if (file.size > 100 * 1024 * 1024) {
         alert('文件大小不能超过100MB');
+        e.target.value = '';
         return;
     }
     
@@ -670,31 +700,55 @@ document.getElementById('packageFile').addEventListener('change', function(e) {
     
     xhr.onload = function() {
         if (xhr.status === 200) {
-            var response = JSON.parse(xhr.responseText);
-            if (response.code === 0) {
-                tempFile = response.data.temp_file;
-                uploadArea.querySelector('.upload-progress').style.display = 'none';
-                uploadArea.querySelector('.upload-success').style.display = 'block';
-                document.getElementById('uploadFileName').textContent = file.name + ' 上传成功';
-                document.getElementById('upgradeBtn').disabled = false;
-            } else {
-                alert(response.message || '上传失败');
+            try {
+                var response = JSON.parse(xhr.responseText);
+                if (response.code === 0) {
+                    tempFile = response.data.temp_file;
+                    uploadArea.querySelector('.upload-progress').style.display = 'none';
+                    uploadArea.querySelector('.upload-success').style.display = 'block';
+                    document.getElementById('uploadFileName').textContent = file.name + ' (' + response.data.size + ') 上传成功';
+                    document.getElementById('upgradeBtn').disabled = false;
+                } else {
+                    alert('上传失败: ' + (response.message || '未知错误'));
+                    uploadArea.querySelector('.upload-progress').style.display = 'none';
+                    uploadArea.querySelector('.upload-placeholder').style.display = 'block';
+                }
+            } catch (parseError) {
+                alert('服务器响应解析失败，请检查PHP错误日志');
                 uploadArea.querySelector('.upload-progress').style.display = 'none';
                 uploadArea.querySelector('.upload-placeholder').style.display = 'block';
             }
+        } else if (xhr.status === 413) {
+            alert('文件大小超过服务器限制(413 Request Entity Too Large)\n\n请修改Web服务器配置:\nNginx: client_max_body_size\nApache: LimitRequestBody');
+            uploadArea.querySelector('.upload-progress').style.display = 'none';
+            uploadArea.querySelector('.upload-placeholder').style.display = 'block';
+        } else if (xhr.status === 500) {
+            alert('服务器内部错误(500)，请检查PHP错误日志');
+            uploadArea.querySelector('.upload-progress').style.display = 'none';
+            uploadArea.querySelector('.upload-placeholder').style.display = 'block';
         } else {
-            alert('上传失败');
+            alert('上传失败，HTTP状态码: ' + xhr.status);
             uploadArea.querySelector('.upload-progress').style.display = 'none';
             uploadArea.querySelector('.upload-placeholder').style.display = 'block';
         }
+        e.target.value = '';
     };
     
     xhr.onerror = function() {
-        alert('网络错误');
+        alert('网络错误，请检查网络连接');
         uploadArea.querySelector('.upload-progress').style.display = 'none';
         uploadArea.querySelector('.upload-placeholder').style.display = 'block';
+        e.target.value = '';
     };
     
+    xhr.ontimeout = function() {
+        alert('上传超时，请检查网络或增加服务器超时时间');
+        uploadArea.querySelector('.upload-progress').style.display = 'none';
+        uploadArea.querySelector('.upload-placeholder').style.display = 'block';
+        e.target.value = '';
+    };
+    
+    xhr.timeout = 300000;
     xhr.open('POST', '<?php echo $this->url("upgrade/upload"); ?>');
     xhr.send(formData);
 });

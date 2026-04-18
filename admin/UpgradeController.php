@@ -200,56 +200,92 @@ class UpgradeController extends Controller
         $this->checkAdmin();
         
         if (!Helper::verifyCsrf()) {
-            $this->jsonError('安全验证失败');
+            $this->jsonError('安全验证失败，请刷新页面重试');
         }
         
-        if (!isset($_FILES['package']) || $_FILES['package']['error'] !== UPLOAD_ERR_OK) {
-            $errorMessages = [
-                UPLOAD_ERR_INI_SIZE => '文件大小超过服务器限制',
-                UPLOAD_ERR_FORM_SIZE => '文件大小超过表单限制',
-                UPLOAD_ERR_PARTIAL => '文件上传不完整',
-                UPLOAD_ERR_NO_FILE => '没有文件被上传',
-                UPLOAD_ERR_NO_TMP_DIR => '缺少临时文件夹',
-                UPLOAD_ERR_CANT_WRITE => '写入文件失败',
-            ];
-            $errorCode = $_FILES['package']['error'] ?? UPLOAD_ERR_NO_FILE;
-            $this->jsonError($errorMessages[$errorCode] ?? '上传失败');
+        if (!isset($_FILES['package'])) {
+            $this->jsonError('没有收到上传文件');
         }
         
         $file = $_FILES['package'];
+        
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            $errorMessages = [
+                UPLOAD_ERR_INI_SIZE => '文件大小超过PHP配置限制(upload_max_filesize: ' . ini_get('upload_max_filesize') . ')',
+                UPLOAD_ERR_FORM_SIZE => '文件大小超过表单限制',
+                UPLOAD_ERR_PARTIAL => '文件上传不完整，请检查网络连接',
+                UPLOAD_ERR_NO_FILE => '没有文件被上传',
+                UPLOAD_ERR_NO_TMP_DIR => '服务器缺少临时文件夹，请联系管理员',
+                UPLOAD_ERR_CANT_WRITE => '服务器写入临时文件失败，请检查权限',
+                UPLOAD_ERR_EXTENSION => 'PHP扩展阻止了文件上传',
+            ];
+            $errorCode = $file['error'];
+            $errorMsg = $errorMessages[$errorCode] ?? '未知上传错误(代码: ' . $errorCode . ')';
+            $this->jsonError($errorMsg);
+        }
+        
         $fileName = $file['name'];
         $fileTmp = $file['tmp_name'];
         $fileSize = $file['size'];
         
-        if (pathinfo($fileName, PATHINFO_EXTENSION) !== 'zip') {
-            $this->jsonError('只支持ZIP压缩包格式');
+        if (empty($fileTmp) || !file_exists($fileTmp)) {
+            $this->jsonError('临时文件不存在');
         }
         
-        if ($fileSize > 100 * 1024 * 1024) {
-            $this->jsonError('文件大小不能超过100MB');
+        if (!is_uploaded_file($fileTmp)) {
+            $this->jsonError('非法的文件上传');
         }
         
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $fileTmp);
-        finfo_close($finfo);
-        
-        $allowedMimes = ['application/zip', 'application/x-zip-compressed', 'application/octet-stream'];
-        if (!in_array($mimeType, $allowedMimes)) {
-            $this->jsonError('文件类型不正确');
+        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        if ($ext !== 'zip') {
+            $this->jsonError('只支持ZIP压缩包格式，当前文件扩展名: ' . $ext);
         }
         
-        try {
-            $tempFile = $this->tempDir . 'upgrade_' . time() . '.zip';
-            if (!move_uploaded_file($fileTmp, $tempFile)) {
-                $this->jsonError('文件保存失败');
-            }
+        $maxSize = 100 * 1024 * 1024;
+        if ($fileSize > $maxSize) {
+            $this->jsonError('文件大小不能超过100MB，当前文件大小: ' . round($fileSize / 1024 / 1024, 2) . 'MB');
+        }
+        
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $fileTmp);
+            finfo_close($finfo);
             
-            $this->jsonSuccess([
-                'temp_file' => basename($tempFile)
-            ], '上传成功');
-        } catch (Exception $e) {
-            $this->jsonError('上传失败：' . $e->getMessage());
+            $allowedMimes = ['application/zip', 'application/x-zip-compressed', 'application/octet-stream', 'application/x-zip'];
+            if (!in_array($mimeType, $allowedMimes)) {
+                $this->jsonError('文件类型不正确，检测到的MIME类型: ' . $mimeType);
+            }
         }
+        
+        if (!is_dir($this->tempDir)) {
+            if (!mkdir($this->tempDir, 0755, true)) {
+                $this->jsonError('无法创建临时目录，请检查权限: ' . $this->tempDir);
+            }
+        }
+        
+        if (!is_writable($this->tempDir)) {
+            @chmod($this->tempDir, 0755);
+            if (!is_writable($this->tempDir)) {
+                $this->jsonError('临时目录不可写，请检查权限: ' . $this->tempDir);
+            }
+        }
+        
+        $tempFile = $this->tempDir . 'upgrade_' . time() . '_' . mt_rand(1000, 9999) . '.zip';
+        
+        if (!move_uploaded_file($fileTmp, $tempFile)) {
+            $this->jsonError('文件保存失败，请检查临时目录权限');
+        }
+        
+        if (!file_exists($tempFile)) {
+            $this->jsonError('文件保存失败，文件不存在');
+        }
+        
+        @chmod($tempFile, 0644);
+        
+        $this->jsonSuccess([
+            'temp_file' => basename($tempFile),
+            'size' => round($fileSize / 1024 / 1024, 2) . 'MB'
+        ], '上传成功');
     }
 
     public function doUpgrade()
