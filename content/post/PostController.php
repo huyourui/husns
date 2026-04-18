@@ -488,16 +488,21 @@ class PostController extends Controller
             
             $post = $this->postModel->getPost($id, $_SESSION['user_id']);
             
-            try {
-                if ($post && $post['user_id'] != $_SESSION['user_id']) {
+            if ($post && $post['user_id'] != $_SESSION['user_id']) {
+                try {
                     $notificationModel = new NotificationModel();
                     $sender = $this->userModel->find($_SESSION['user_id']);
                     if ($sender) {
                         $senderName = $sender['nickname'] ?: $sender['username'];
                         $notificationModel->sendLikeNotification($post['user_id'], $_SESSION['user_id'], $id, $senderName);
                     }
+                } catch (Exception $e) {
+                    Logger::error('点赞通知发送失败', [
+                        'post_id' => $id,
+                        'user_id' => $_SESSION['user_id'],
+                        'error' => $e->getMessage()
+                    ]);
                 }
-            } catch (Exception $e) {
             }
             
             Helper::jsonSuccess(['likes' => $post['likes']]);
@@ -552,6 +557,11 @@ class PostController extends Controller
                     $notificationModel->sendFavoriteNotification($post['user_id'], $_SESSION['user_id'], $id, $senderName);
                 }
             } catch (Exception $e) {
+                Logger::error('收藏通知发送失败', [
+                    'post_id' => $id,
+                    'user_id' => $_SESSION['user_id'],
+                    'error' => $e->getMessage()
+                ]);
             }
             
             Helper::jsonSuccess(null, '收藏成功');
