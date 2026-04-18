@@ -654,7 +654,7 @@ class PostController extends Controller
                     }
                 }
                 
-                $this->sendMentionNotifications($content, $postId, $_SESSION['user_id']);
+                $this->sendMentionNotifications($content, $postId, $_SESSION['user_id'], $commentId);
 
                 if ($alsoRepost && $post) {
                     $repostId = $this->postModel->repost($_SESSION['user_id'], $postId, $content, false);
@@ -772,6 +772,10 @@ class PostController extends Controller
                             'data' => ['post_id' => $postId, 'original_post_id' => $originalPostId]
                         ]
                     );
+                }
+                
+                if ($content) {
+                    $this->sendMentionNotifications($content, $postId, $_SESSION['user_id'], null);
                 }
             } catch (Exception $e) {
             }
