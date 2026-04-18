@@ -277,7 +277,7 @@ class PostController extends Controller
             $html .= '</div></div>';
             
             try {
-                $this->sendMentionNotifications($content, $postId, $_SESSION['user_id']);
+                $this->sendMentionNotifications($content, $postId, $_SESSION['user_id'], null);
             } catch (Exception $e) {
             }
             
@@ -998,7 +998,7 @@ class PostController extends Controller
         Helper::jsonError('操作失败');
     }
 
-    private function sendMentionNotifications($content, $postId, $senderId)
+    private function sendMentionNotifications($content, $postId, $senderId, $commentId = null)
     {
         preg_match_all('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)/u', $content, $matches);
         
@@ -1025,7 +1025,8 @@ class PostController extends Controller
                         $mentionedUser['id'],
                         $senderId,
                         $postId,
-                        $senderName
+                        $senderName,
+                        $commentId
                     );
                 }
             } catch (Exception $e) {

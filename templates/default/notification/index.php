@@ -22,20 +22,49 @@
         <div class="empty">暂无消息通知</div>
         <?php else: ?>
         <?php foreach ($notifications as $notification): ?>
-        <div class="notification-item <?php echo $notification['is_read'] ? 'read' : 'unread'; ?>" data-id="<?php echo $notification['id']; ?>">
+        <?php
+        $typeIcon = '🔔';
+        $typeClass = '';
+        switch ($notification['type']) {
+            case 'comment':
+                $typeIcon = '💬';
+                $typeClass = 'type-comment';
+                break;
+            case 'like':
+                $typeIcon = '❤️';
+                $typeClass = 'type-like';
+                break;
+            case 'follow':
+                $typeIcon = '👤';
+                $typeClass = 'type-follow';
+                break;
+            case 'mention':
+                $typeIcon = '@';
+                $typeClass = 'type-mention';
+                break;
+            case 'system':
+                $typeIcon = '🔔';
+                $typeClass = 'type-system';
+                break;
+        }
+        ?>
+        <div class="notification-item <?php echo $notification['is_read'] ? 'read' : 'unread'; ?> <?php echo $typeClass; ?>" data-id="<?php echo $notification['id']; ?>">
             <div class="notification-avatar">
                 <?php if ($notification['sender_id']): ?>
                 <a href="<?php echo $this->url('user/profile?id=' . $notification['sender_id']); ?>">
                     <?php echo $this->avatar($notification['sender_avatar'] ?? null, $notification['sender_name'] ?? '', 'small'); ?>
                 </a>
                 <?php else: ?>
-                <span class="system-icon">🔔</span>
+                <span class="system-icon"><?php echo $typeIcon; ?></span>
                 <?php endif; ?>
             </div>
             <div class="notification-content">
                 <div class="notification-title">
                     <?php if (!$notification['is_read']): ?>
                     <span class="unread-dot"></span>
+                    <?php endif; ?>
+                    <?php if ($notification['type'] == 'mention'): ?>
+                    <span class="mention-badge">@</span>
                     <?php endif; ?>
                     <?php echo $this->escape($notification['title']); ?>
                 </div>

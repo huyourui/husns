@@ -96,18 +96,25 @@ class NotificationModel extends Model
         );
     }
 
-    public function sendMentionNotification($userId, $senderId, $postId, $senderName)
+    public function sendMentionNotification($userId, $senderId, $postId, $senderName, $commentId = null)
     {
+        $title = $commentId 
+            ? "{$senderName} 在评论中提到了你"
+            : "{$senderName} 在动态中提到了你";
+        
         return $this->send(
             $userId,
             self::TYPE_MENTION,
-            "{$senderName} 在动态中提到了你",
+            $title,
             '',
             [
                 'sender_id' => $senderId,
                 'target_type' => self::TARGET_POST,
                 'target_id' => $postId,
-                'data' => ['post_id' => $postId]
+                'data' => [
+                    'post_id' => $postId,
+                    'comment_id' => $commentId
+                ]
             ]
         );
     }
