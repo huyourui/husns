@@ -34,6 +34,7 @@
                 <a href="<?php echo $this->url('point'); ?>"><?php echo $this->escape(Setting::getPointName()); ?>管理</a>
                 <a href="<?php echo $this->url('link'); ?>">友情链接</a>
                 <a href="<?php echo $this->url('plugin'); ?>">插件管理</a>
+                <a href="<?php echo $this->url('theme'); ?>">主题管理</a>
                 <a href="<?php echo $this->url('upgrade'); ?>">系统更新</a>
                 <a href="<?php echo $this->url('admin/settings'); ?>">系统设置</a>
                 <a href="<?php echo $this->url(); ?>">返回前台</a>

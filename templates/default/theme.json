@@ -1,0 +1,25 @@
+{
+    "name": "默认主题",
+    "version": "2.7.3",
+    "author": "HYR",
+    "description": "HuSNS 默认主题，简洁现代的设计风格，支持响应式布局和暗黑模式",
+    "homepage": "https://huyourui.com",
+    "license": "MIT",
+    "requires": {
+        "php": ">=7.4.0",
+        "husns": ">=2.0.0"
+    },
+    "features": [
+        "响应式设计",
+        "暗黑模式支持",
+        "表情功能",
+        "图片网格布局",
+        "无限滚动"
+    ],
+    "colors": {
+        "primary": "#3b82f6",
+        "success": "#10b981",
+        "warning": "#f59e0b",
+        "danger": "#ef4444"
+    }
+}

@@ -20,6 +20,7 @@ class App
         'PostController' => 'content/post/PostController.php',
         'AdminController' => 'admin/AdminController.php',
         'PluginController' => 'admin/PluginController.php',
+        'ThemeController' => 'admin/ThemeController.php',
         'UpgradeController' => 'admin/UpgradeController.php',
         'NotificationController' => 'content/notification/NotificationController.php',
         'AnnouncementController' => 'content/announcement/AnnouncementController.php',
