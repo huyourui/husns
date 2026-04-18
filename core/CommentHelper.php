@@ -51,6 +51,7 @@ class CommentHelper
     {
         $username = htmlspecialchars($comment['username']);
         $content = Helper::parseEmojis(htmlspecialchars($comment['content']));
+        $content = Helper::parseMentions($content);
         $profileUrl = Helper::url('user/profile?id=' . $comment['user_id']);
         
         $html = '<div class="comment-item" id="comment-' . $comment['id'] . '" data-comment-id="' . $comment['id'] . '">';
@@ -100,6 +101,7 @@ class CommentHelper
     {
         $username = htmlspecialchars($reply['username']);
         $content = Helper::parseEmojis(htmlspecialchars($reply['content']));
+        $content = Helper::parseMentions($content);
         $profileUrl = Helper::url('user/profile?id=' . $reply['user_id']);
         
         $html = '<div class="reply-item" id="comment-' . $reply['id'] . '" data-comment-id="' . $reply['id'] . '">';

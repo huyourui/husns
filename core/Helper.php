@@ -488,4 +488,91 @@ class Helper
         
         return $emojiMap;
     }
+    
+    /**
+     * 解析@用户
+     * 
+     * 将@username转换为可点击的用户链接
+     * 支持原始@符号和HTML实体@
+     * 
+     * @param string $content 内容
+     * @return string 解析后的内容
+     */
+    public static function parseMentions($content)
+    {
+        $content = preg_replace_callback(
+            '/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;:：])/u',
+            function($matches) {
+                $username = $matches[1];
+                $url = self::url('user/profile?username=' . urlencode($username));
+                return '<a href="' . $url . '" class="mention" data-username="' . htmlspecialchars($username) . '">@' . htmlspecialchars($username) . '</a>';
+            },
+            $content
+        );
+        
+        $content = preg_replace_callback(
+            '/&#64;([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;:：])/u',
+            function($matches) {
+                $username = $matches[1];
+                $url = self::url('user/profile?username=' . urlencode($username));
+                return '<a href="' . $url . '" class="mention" data-username="' . htmlspecialchars($username) . '">@' . htmlspecialchars($username) . '</a>';
+            },
+            $content
+        );
+        
+        return $content;
+    }
+    
+    /**
+     * 提取@用户列表
+     * 
+     * 从内容中提取所有被@的用户名
+     * 
+     * @param string $content 内容
+     * @return array 用户名数组
+     */
+    public static function extractMentions($content)
+    {
+        preg_match_all('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;:：])/u', $content, $matches);
+        return isset($matches[1]) ? array_unique($matches[1]) : [];
+    }
+    
+    /**
+     * 发送@通知
+     * 
+     * 给被@的用户发送通知
+     * 
+     * @param array $userIds 用户ID数组
+     * @param int $fromUserId 发送者ID
+     * @param int $postId 动态ID
+     * @param int $commentId 评论ID
+     * @param string $content 内容
+     */
+    public static function sendMentionNotifications($userIds, $fromUserId, $postId, $commentId, $content)
+    {
+        if (empty($userIds)) {
+            return;
+        }
+        
+        $db = Database::getInstance();
+        $notificationModel = new NotificationModel();
+        
+        foreach ($userIds as $userId) {
+            if ($userId == $fromUserId) {
+                continue;
+            }
+            
+            $notificationModel->send(
+                $userId,
+                'mention',
+                '有人提到了你',
+                $content,
+                [
+                    'post_id' => $postId,
+                    'comment_id' => $commentId,
+                    'from_user_id' => $fromUserId
+                ]
+            );
+        }
+    }
 }
