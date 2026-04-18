@@ -48,11 +48,75 @@ class AdminController extends Controller
             'disk_free_space' => $this->formatBytes(disk_free_space(ROOT_PATH)),
             'php_extensions' => implode(', ', ['gd' => 'GD', 'pdo' => 'PDO', 'pdo_mysql' => 'PDO MySQL', 'mbstring' => 'Mbstring', 'curl' => 'cURL', 'json' => 'JSON', 'zip' => 'Zip']),
         ];
+        
+        $versionInfo = $this->checkLatestVersion();
 
         $this->render('admin/index', [
             'stats' => $stats,
-            'serverInfo' => $serverInfo
+            'serverInfo' => $serverInfo,
+            'versionInfo' => $versionInfo
         ]);
+    }
+    
+    /**
+     * 检查最新版本
+     * 
+     * @return array 版本信息
+     */
+    private function checkLatestVersion()
+    {
+        $cacheFile = ROOT_PATH . 'temp' . DIRECTORY_SEPARATOR . 'version_check.json';
+        $cacheTime = 3600;
+        
+        if (file_exists($cacheFile)) {
+            $cache = json_decode(file_get_contents($cacheFile), true);
+            if ($cache && isset($cache['timestamp']) && (time() - $cache['timestamp']) < $cacheTime) {
+                return $cache;
+            }
+        }
+        
+        $versionInfo = [
+            'current' => APP_VERSION,
+            'latest' => null,
+            'has_update' => false,
+            'release_url' => null,
+            'timestamp' => time()
+        ];
+        
+        try {
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => 'https://gitee.com/api/v5/repos/youruihu/husns/releases/latest',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 5,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_USERAGENT => 'HuSNS/' . APP_VERSION
+            ]);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            if ($httpCode === 200 && $response) {
+                $release = json_decode($response, true);
+                
+                if ($release && isset($release['tag_name'])) {
+                    $latestVersion = ltrim($release['tag_name'], 'v');
+                    $versionInfo['latest'] = $latestVersion;
+                    $versionInfo['has_update'] = version_compare($latestVersion, APP_VERSION, '>');
+                    $versionInfo['release_url'] = $release['html_url'] ?? null;
+                    $versionInfo['release_notes'] = $release['body'] ?? '';
+                }
+            }
+        } catch (Exception $e) {
+        }
+        
+        if (!is_dir(dirname($cacheFile))) {
+            mkdir(dirname($cacheFile), 0755, true);
+        }
+        file_put_contents($cacheFile, json_encode($versionInfo));
+        
+        return $versionInfo;
     }
 
     private function getMysqlVersion()

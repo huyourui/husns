@@ -19,7 +19,7 @@
 
 // 定义测试环境
 define('ROOT_PATH', str_replace('\\', '/', dirname(__DIR__)) . '/');
-define('APP_VERSION', '2.8.0');
+define('APP_VERSION', '2.8.1');
 define('LOG_PATH', ROOT_PATH . 'logs' . DIRECTORY_SEPARATOR);
 
 // 模拟配置

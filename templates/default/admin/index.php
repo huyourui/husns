@@ -43,7 +43,21 @@
         <table class="server-info-table">
             <tr>
                 <td class="info-label">源码版本</td>
-                <td><?php echo APP_VERSION; ?></td>
+                <td>
+                    <span class="version-current">v<?php echo APP_VERSION; ?></span>
+                    <?php if (!empty($versionInfo['has_update'])): ?>
+                    <a href="<?php echo $this->url('upgrade'); ?>" class="version-update-badge">
+                        <span class="update-icon">🔄</span>
+                        <span class="update-text">发现新版本 v<?php echo $this->escape($versionInfo['latest']); ?></span>
+                        <span class="update-action">点击更新</span>
+                    </a>
+                    <?php elseif (!empty($versionInfo['latest'])): ?>
+                    <span class="version-latest-badge">
+                        <span class="latest-icon">✓</span>
+                        <span class="latest-text">已是最新版本</span>
+                    </span>
+                    <?php endif; ?>
+                </td>
                 <td class="info-label">操作系统</td>
                 <td><?php echo $this->escape($serverInfo['os']); ?></td>
             </tr>
@@ -74,3 +88,87 @@
         </table>
     </div>
 </div>
+
+<style>
+.version-current {
+    font-weight: 600;
+    color: #374151;
+}
+
+.version-update-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 12px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s ease;
+    animation: pulse-badge 2s infinite;
+}
+
+.version-update-badge:hover {
+    background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.update-icon {
+    font-size: 14px;
+    animation: rotate 1.5s linear infinite;
+}
+
+.update-text {
+    color: #92400e;
+    font-weight: 500;
+}
+
+.update-action {
+    color: #d97706;
+    font-weight: 600;
+    padding-left: 6px;
+    border-left: 1px solid #f59e0b;
+}
+
+.version-latest-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 12px;
+    padding: 4px 10px;
+    background: #d1fae5;
+    border: 1px solid #10b981;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.latest-icon {
+    color: #10b981;
+    font-weight: bold;
+}
+
+.latest-text {
+    color: #065f46;
+}
+
+@keyframes pulse-badge {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.85;
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+</style>
