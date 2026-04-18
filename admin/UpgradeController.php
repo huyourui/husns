@@ -437,7 +437,9 @@ class UpgradeController extends Controller
         }
         
         if (!is_dir($dst)) {
-            mkdir($dst, 0755, true);
+            if (!mkdir($dst, 0755, true)) {
+                throw new Exception("无法创建目录：{$dst}");
+            }
         }
         
         while (false !== ($file = readdir($dir))) {
@@ -457,7 +459,21 @@ class UpgradeController extends Controller
                 if (in_array($file, $excludeFiles)) {
                     continue;
                 }
-                copy($srcPath, $dstPath);
+                
+                if (file_exists($dstPath)) {
+                    if (!is_writable($dstPath)) {
+                        @chmod($dstPath, 0644);
+                    }
+                    if (!is_writable($dstPath)) {
+                        @unlink($dstPath);
+                    }
+                }
+                
+                if (!copy($srcPath, $dstPath)) {
+                    throw new Exception("无法复制文件：{$file}");
+                }
+                
+                @chmod($dstPath, 0644);
             }
         }
         
