@@ -82,6 +82,8 @@ server {
 │   ├── post/           # 帖子模块
 │   ├── topic/          # 话题模块
 │   └── user/           # 用户模块
+├── controller/         # 控制器（命名空间）
+│   └── Traits/         # 控制器Traits
 ├── core/               # 核心框架
 │   ├── App.php         # 应用主类
 │   ├── Container.php   # 依赖注入容器
@@ -95,9 +97,16 @@ server {
 │   ├── Security.php    # 安全处理
 │   ├── Setting.php     # 系统设置
 │   ├── View.php        # 视图引擎
+│   ├── BaseRepository.php  # Repository基类
+│   ├── Contracts/      # 接口定义
+│   │   ├── RepositoryInterface.php
+│   │   └── LoggerInterface.php
 │   └── ...
 ├── install/            # 安装程序
 ├── plugins/            # 插件目录
+├── repository/         # 数据仓库（命名空间）
+│   ├── PostRepository.php
+│   └── UserRepository.php
 ├── static/             # 静态资源
 ├── templates/          # 模板文件
 ├── tests/              # 单元测试
@@ -218,6 +227,13 @@ php tests/run.php Helper
 本项目基于 [MIT](LICENSE) 协议开源。
 
 ## 更新日志
+
+### v3.0.1 (2026-04-19)
+- 🐛 **Bug修复**
+  - 修复用户微博被其他用户点赞时收不到消息提醒的问题
+  - 修复用户微博被其他用户收藏时收不到消息提醒的问题
+  - 增强通知发送的可靠性和错误日志记录
+  - 添加通知发送失败的详细调试信息
 
 ### v3.0.0 (2026-04-19)
 - 🏗️ **架构重构**

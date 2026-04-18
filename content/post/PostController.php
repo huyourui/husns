@@ -488,26 +488,53 @@ class PostController extends Controller
             
             $post = $this->postModel->getPost($id, $_SESSION['user_id']);
             
-            if ($post && $post['user_id'] != $_SESSION['user_id']) {
-                try {
-                    $notificationModel = new NotificationModel();
-                    $sender = $this->userModel->find($_SESSION['user_id']);
-                    if ($sender) {
-                        $senderName = $sender['nickname'] ?: $sender['username'];
-                        $notificationModel->sendLikeNotification($post['user_id'], $_SESSION['user_id'], $id, $senderName);
-                    }
-                } catch (Exception $e) {
-                    Logger::error('点赞通知发送失败', [
-                        'post_id' => $id,
-                        'user_id' => $_SESSION['user_id'],
-                        'error' => $e->getMessage()
-                    ]);
-                }
+            if ($post && isset($post['user_id']) && $post['user_id'] != $_SESSION['user_id']) {
+                $this->sendLikeNotification($post['user_id'], $id);
             }
             
-            Helper::jsonSuccess(['likes' => $post['likes']]);
+            Helper::jsonSuccess(['likes' => $post['likes'] ?? 0]);
         } else {
             Helper::jsonError('已点赞过');
+        }
+    }
+    
+    private function sendLikeNotification($postUserId, $postId)
+    {
+        try {
+            $notificationModel = new NotificationModel();
+            $sender = $this->userModel->find($_SESSION['user_id']);
+            
+            if (!$sender) {
+                Logger::error('点赞通知发送失败：发送者不存在', [
+                    'post_id' => $postId,
+                    'sender_id' => $_SESSION['user_id']
+                ]);
+                return;
+            }
+            
+            $senderName = $sender['nickname'] ?: $sender['username'];
+            $notificationId = $notificationModel->sendLikeNotification(
+                $postUserId, 
+                $_SESSION['user_id'], 
+                $postId, 
+                $senderName
+            );
+            
+            if (!$notificationId) {
+                Logger::warning('点赞通知未发送', [
+                    'post_id' => $postId,
+                    'post_user_id' => $postUserId,
+                    'sender_id' => $_SESSION['user_id'],
+                    'reason' => '可能是自己点赞自己的帖子'
+                ]);
+            }
+        } catch (\Exception $e) {
+            Logger::error('点赞通知发送异常', [
+                'post_id' => $postId,
+                'sender_id' => $_SESSION['user_id'],
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 
@@ -549,24 +576,50 @@ class PostController extends Controller
         $result = $favoriteModel->add($id, $_SESSION['user_id']);
         
         if ($result) {
-            try {
-                $notificationModel = new NotificationModel();
-                $sender = $this->userModel->find($_SESSION['user_id']);
-                if ($sender) {
-                    $senderName = $sender['nickname'] ?: $sender['username'];
-                    $notificationModel->sendFavoriteNotification($post['user_id'], $_SESSION['user_id'], $id, $senderName);
-                }
-            } catch (Exception $e) {
-                Logger::error('收藏通知发送失败', [
-                    'post_id' => $id,
-                    'user_id' => $_SESSION['user_id'],
-                    'error' => $e->getMessage()
-                ]);
-            }
-            
+            $this->sendFavoriteNotification($post['user_id'], $id);
             Helper::jsonSuccess(null, '收藏成功');
         } else {
             Helper::jsonError('已收藏过');
+        }
+    }
+    
+    private function sendFavoriteNotification($postUserId, $postId)
+    {
+        try {
+            $notificationModel = new NotificationModel();
+            $sender = $this->userModel->find($_SESSION['user_id']);
+            
+            if (!$sender) {
+                Logger::error('收藏通知发送失败：发送者不存在', [
+                    'post_id' => $postId,
+                    'sender_id' => $_SESSION['user_id']
+                ]);
+                return;
+            }
+            
+            $senderName = $sender['nickname'] ?: $sender['username'];
+            $notificationId = $notificationModel->sendFavoriteNotification(
+                $postUserId, 
+                $_SESSION['user_id'], 
+                $postId, 
+                $senderName
+            );
+            
+            if (!$notificationId) {
+                Logger::warning('收藏通知未发送', [
+                    'post_id' => $postId,
+                    'post_user_id' => $postUserId,
+                    'sender_id' => $_SESSION['user_id'],
+                    'reason' => '可能是自己收藏自己的帖子'
+                ]);
+            }
+        } catch (\Exception $e) {
+            Logger::error('收藏通知发送异常', [
+                'post_id' => $postId,
+                'sender_id' => $_SESSION['user_id'],
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 
