@@ -62,7 +62,7 @@ trait PostInteractionTrait
                     $notificationModel = new NotificationModel();
                     $sender = $this->userModel->find($_SESSION['user_id']);
                     if ($sender) {
-                        $senderName = $sender['nickname'] ?: $sender['username'];
+                        $senderName = $sender['username'];
                         $notificationModel->sendLikeNotification($post['user_id'], $_SESSION['user_id'], $id, $senderName);
                     }
                 } catch (\Exception $e) {
@@ -132,7 +132,7 @@ trait PostInteractionTrait
                 $notificationModel = new NotificationModel();
                 $sender = $this->userModel->find($_SESSION['user_id']);
                 if ($sender) {
-                    $senderName = $sender['nickname'] ?: $sender['username'];
+                    $senderName = $sender['username'];
                     $notificationModel->sendFavoriteNotification($post['user_id'], $_SESSION['user_id'], $id, $senderName);
                 }
             } catch (\Exception $e) {

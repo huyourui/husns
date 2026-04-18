@@ -104,7 +104,7 @@ trait PostPublishTrait
             
             try {
                 $this->sendMentionNotifications($content, $postId, $_SESSION['user_id'], null);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
             }
             
             Helper::jsonSuccess(['id' => $postId, 'html' => $html], '发布成功');
@@ -167,7 +167,7 @@ trait PostPublishTrait
                 $updateData['edit_count'] = $editCount;
                 $updateData['edited_at'] = time();
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
         }
         
         $result = $this->postModel->update($id, $updateData);
@@ -587,7 +587,7 @@ trait PostPublishTrait
             return;
         }
         
-        $senderName = $sender['nickname'] ?: $sender['username'];
+        $senderName = $sender['username'];
         
         foreach ($usernames as $username) {
             try {
@@ -602,7 +602,7 @@ trait PostPublishTrait
                         $commentId
                     );
                 }
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
             }
         }
     }

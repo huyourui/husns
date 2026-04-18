@@ -512,7 +512,7 @@ class PostController extends Controller
                 return;
             }
             
-            $senderName = $sender['nickname'] ?: $sender['username'];
+            $senderName = $sender['username'];
             $notificationId = $notificationModel->sendLikeNotification(
                 $postUserId, 
                 $_SESSION['user_id'], 
@@ -597,7 +597,7 @@ class PostController extends Controller
                 return;
             }
             
-            $senderName = $sender['nickname'] ?: $sender['username'];
+            $senderName = $sender['username'];
             $notificationId = $notificationModel->sendFavoriteNotification(
                 $postUserId, 
                 $_SESSION['user_id'], 
@@ -1090,7 +1090,7 @@ class PostController extends Controller
             return;
         }
         
-        $senderName = $sender['nickname'] ?: $sender['username'];
+        $senderName = $sender['username'];
         
         foreach ($usernames as $username) {
             try {
