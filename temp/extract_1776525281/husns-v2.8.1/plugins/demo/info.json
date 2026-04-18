@@ -1,7 +1,0 @@
-{
-    "name": "demo",
-    "title": "示例插件",
-    "version": "1.0.0",
-    "author": "HuSNS Team",
-    "description": "这是一个示例插件，展示插件系统的工作方式"
-}
