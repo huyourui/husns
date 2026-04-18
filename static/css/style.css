@@ -1508,6 +1508,18 @@ body.dark-mode .image-item {
     border-left: 3px solid #f59e0b;
 }
 
+.notification-item.type-favorite {
+    border-left: 3px solid #fbbf24;
+}
+
+.notification-item.type-favorite.unread {
+    background: linear-gradient(90deg, #fffbeb 0%, #fff 100%);
+}
+
+.notification-item.type-favorite.unread:hover {
+    background: linear-gradient(90deg, #fef3c7 0%, #f8f9fa 100%);
+}
+
 body.dark-mode .notification-item.type-mention.unread {
     background: linear-gradient(90deg, #1e2744 0%, #1a1a2e 100%);
 }

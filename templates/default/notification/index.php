@@ -42,6 +42,10 @@
                 $typeIcon = '@';
                 $typeClass = 'type-mention';
                 break;
+            case 'favorite':
+                $typeIcon = '⭐';
+                $typeClass = 'type-favorite';
+                break;
             case 'system':
                 $typeIcon = '🔔';
                 $typeClass = 'type-system';

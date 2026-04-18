@@ -544,6 +544,16 @@ class PostController extends Controller
         $result = $favoriteModel->add($id, $_SESSION['user_id']);
         
         if ($result) {
+            try {
+                $notificationModel = new NotificationModel();
+                $sender = $this->userModel->find($_SESSION['user_id']);
+                if ($sender) {
+                    $senderName = $sender['nickname'] ?: $sender['username'];
+                    $notificationModel->sendFavoriteNotification($post['user_id'], $_SESSION['user_id'], $id, $senderName);
+                }
+            } catch (Exception $e) {
+            }
+            
             Helper::jsonSuccess(null, '收藏成功');
         } else {
             Helper::jsonError('已收藏过');
@@ -1004,13 +1014,12 @@ class PostController extends Controller
 
     private function sendMentionNotifications($content, $postId, $senderId, $commentId = null)
     {
-        preg_match_all('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)/u', $content, $matches);
+        $usernames = Helper::extractMentions($content);
         
-        if (empty($matches[1])) {
+        if (empty($usernames)) {
             return;
         }
         
-        $usernames = array_unique($matches[1]);
         $notificationModel = new NotificationModel();
         $sender = $this->userModel->find($senderId);
         

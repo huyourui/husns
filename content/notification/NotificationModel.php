@@ -16,6 +16,7 @@ class NotificationModel extends Model
     const TYPE_LIKE = 'like';
     const TYPE_FOLLOW = 'follow';
     const TYPE_MENTION = 'mention';
+    const TYPE_FAVORITE = 'favorite';
     const TYPE_SYSTEM = 'system';
     
     const TARGET_POST = 'post';
@@ -92,6 +93,22 @@ class NotificationModel extends Model
                 'target_type' => self::TARGET_USER,
                 'target_id' => $userId,
                 'data' => ['follower_id' => $senderId]
+            ]
+        );
+    }
+
+    public function sendFavoriteNotification($postUserId, $senderId, $postId, $senderName)
+    {
+        return $this->send(
+            $postUserId,
+            self::TYPE_FAVORITE,
+            "{$senderName} 收藏了你的动态",
+            '',
+            [
+                'sender_id' => $senderId,
+                'target_type' => self::TARGET_POST,
+                'target_id' => $postId,
+                'data' => ['post_id' => $postId]
             ]
         );
     }
