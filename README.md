@@ -219,6 +219,31 @@ php tests/run.php Helper
 
 ## 更新日志
 
+### v3.0.0 (2026-04-19)
+- 🏗️ **架构重构**
+  - 核心类添加命名空间支持（PSR-4规范）
+  - 实现Repository模式，抽象Model层
+  - 控制器功能模块化（Traits拆分）
+- 📦 **新增组件**
+  - RepositoryInterface 接口定义数据仓库标准操作
+  - LoggerInterface 接口定义日志记录标准
+  - BaseRepository 抽象类实现通用数据操作
+  - PostRepository 处理帖子相关数据操作
+  - UserRepository 处理用户相关数据操作
+  - PostPublishTrait 帖子发布相关功能
+  - PostInteractionTrait 帖子互动相关功能
+  - PostListTrait 帖子列表相关功能
+- 🔧 **自动加载优化**
+  - 支持PSR-4命名空间自动加载
+  - 保持向后兼容，原有类名仍可使用
+- 🧪 **测试增强**
+  - 新增Repository模式测试用例
+  - 新增命名空间自动加载测试
+  - 新增代码规范测试
+- 📝 **代码规范**
+  - 完善所有新文件的注释文档
+  - 统一代码风格
+
 ### v2.9.3 (2026-04-18)
 - 🐛 **Bug修复**
   - 修复点赞通知发送逻辑，将条件判断移到try块外

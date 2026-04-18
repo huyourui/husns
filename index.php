@@ -13,7 +13,7 @@
  * 定义核心常量
  */
 define('ROOT_PATH', str_replace('\\', '/', dirname(__FILE__)) . '/');
-define('APP_VERSION', '2.9.3');
+define('APP_VERSION', '3.0.0');
 define('PHP_VERSION_MIN', '7.4.0');
 
 /**
@@ -114,9 +114,29 @@ require_once ROOT_PATH . 'core/App.php';
 ExceptionHandler::register();
 
 /**
- * 注册自动加载器
+ * 注册自动加载器（支持PSR-4命名空间）
  */
 spl_autoload_register(function($class) {
+    $namespaces = [
+        'Core\\' => ROOT_PATH . 'core/',
+        'Repository\\' => ROOT_PATH . 'repository/',
+        'Controller\\Traits\\' => ROOT_PATH . 'controller/Traits/',
+        'Model\\' => ROOT_PATH . 'model/',
+        'Service\\' => ROOT_PATH . 'service/',
+    ];
+    
+    foreach ($namespaces as $prefix => $baseDir) {
+        $len = strlen($prefix);
+        if (strncmp($prefix, $class, $len) === 0) {
+            $relativeClass = substr($class, $len);
+            $file = $baseDir . str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass) . '.php';
+            if (file_exists($file)) {
+                require_once $file;
+                return;
+            }
+        }
+    }
+    
     $map = [
         'UserModel' => ROOT_PATH . 'content/user/UserModel.php',
         'UserController' => ROOT_PATH . 'content/user/UserController.php',

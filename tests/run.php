@@ -19,7 +19,7 @@
 
 // 定义测试环境
 define('ROOT_PATH', str_replace('\\', '/', dirname(__DIR__)) . '/');
-define('APP_VERSION', '2.9.3');
+define('APP_VERSION', '3.0.0');
 define('LOG_PATH', ROOT_PATH . 'logs' . DIRECTORY_SEPARATOR);
 
 // 模拟配置
@@ -64,6 +64,7 @@ require_once ROOT_PATH . 'core/Controller.php';
 require_once __DIR__ . '/TestRunner.php';
 require_once __DIR__ . '/BasicTest.php';
 require_once __DIR__ . '/ExtendedTest.php';
+require_once __DIR__ . '/RepositoryTest.php';
 
 /**
  * 输出测试标题
