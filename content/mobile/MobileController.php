@@ -45,8 +45,10 @@ class MobileController extends Controller
 
         $posts = $this->postModel->getTimeline($page, $pageSize, $userId, $tab);
         
+        $topicUrl = Helper::url('mobile/topic?keyword=$1');
+        $userUrl = Helper::url('mobile/user?username=$1');
         foreach ($posts as &$post) {
-            $post['content'] = Helper::parseEmojis($post['content']);
+            $post['content'] = Helper::parseContent($post['content'], $topicUrl, $userUrl);
             $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
         }
         unset($post);
@@ -101,10 +103,12 @@ class MobileController extends Controller
 
         $posts = $this->db->fetchAll($sql, [$threshold, $offset, $pageSize]);
 
+        $topicUrl = Helper::url('mobile/topic?keyword=$1');
+        $userUrl = Helper::url('mobile/user?username=$1');
         foreach ($posts as &$post) {
             $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
             $post['time_ago'] = Helper::formatTime($post['created_at']);
-            $post['content'] = Helper::parseEmojis(Security::escape($post['content']));
+            $post['content'] = Helper::parseContent($post['content'], $topicUrl, $userUrl);
         }
         unset($post);
 
@@ -367,13 +371,19 @@ class MobileController extends Controller
             return;
         }
 
-        $post['formatted_content'] = Security::escape($post['content']);
-        $post['formatted_content'] = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('mobile/topic?keyword=$1') . '">#$1#</a>', $post['formatted_content']);
-        $post['formatted_content'] = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$)/u', '<a href="' . Helper::url('mobile/user?username=$1') . '">@$1</a>', $post['formatted_content']);
-        $post['formatted_content'] = Helper::parseEmojis($post['formatted_content']);
+        $post['formatted_content'] = Helper::parseContent(
+            $post['content'],
+            Helper::url('mobile/topic?keyword=$1'),
+            Helper::url('mobile/user?username=$1')
+        );
         $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
 
         $comments = $this->postModel->getComments($id);
+        $userUrl = Helper::url('mobile/user?username=$1');
+        foreach ($comments as &$comment) {
+            $comment['content'] = Helper::parseContent($comment['content'], null, $userUrl);
+        }
+        unset($comment);
 
         $unreadCount = 0;
         if ($userId) {
@@ -434,8 +444,10 @@ class MobileController extends Controller
         $pageSize = 10;
         $posts = $this->postModel->getUserPosts($_SESSION['user_id'], $page, $pageSize);
 
+        $topicUrl = Helper::url('mobile/topic?keyword=$1');
+        $userUrl = Helper::url('mobile/user?username=$1');
         foreach ($posts as &$post) {
-            $post['content'] = Helper::parseEmojis($post['content']);
+            $post['content'] = Helper::parseContent($post['content'], $topicUrl, $userUrl);
             $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
         }
         unset($post);
@@ -492,8 +504,10 @@ class MobileController extends Controller
         $pageSize = 10;
         $posts = $this->postModel->getUserPosts($targetUser['id'], $page, $pageSize);
 
+        $topicUrl = Helper::url('mobile/topic?keyword=$1');
+        $userUrl = Helper::url('mobile/user?username=$1');
         foreach ($posts as &$post) {
-            $post['content'] = Helper::parseEmojis($post['content']);
+            $post['content'] = Helper::parseContent($post['content'], $topicUrl, $userUrl);
             $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
         }
         unset($post);
@@ -546,8 +560,10 @@ class MobileController extends Controller
 
         $posts = $this->postModel->getPostsByTopic($keyword, $page, $pageSize);
 
+        $topicUrl = Helper::url('mobile/topic?keyword=$1');
+        $userUrl = Helper::url('mobile/user?username=$1');
         foreach ($posts as &$post) {
-            $post['content'] = Helper::parseEmojis($post['content']);
+            $post['content'] = Helper::parseContent($post['content'], $topicUrl, $userUrl);
             $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
         }
         unset($post);

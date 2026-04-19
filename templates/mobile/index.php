@@ -35,12 +35,7 @@
         
         <a href="<?php echo $this->url('mobile/detail?id=' . $post['id']); ?>" style="text-decoration:none;color:inherit;">
             <div class="m-post-content">
-                <?php 
-                $content = Security::escape($post['content']);
-                $content = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('mobile/topic?keyword=$1') . '" onclick="event.stopPropagation();">#$1#</a>', $content);
-                $content = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$)/u', '<a href="' . Helper::url('mobile/user?username=$1') . '" onclick="event.stopPropagation();">@$1</a>', $content);
-                echo $content;
-                ?>
+                <?php echo $post['content']; ?>
             </div>
             
             <?php if (!empty($post['images'])): ?>

@@ -791,3 +791,22 @@ body.mobile-body {
 .dark-mode .m-publish-image-item {
     background: var(--bg-secondary);
 }
+
+.emoji-img-inline {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    display: inline-block;
+    margin: -2px 2px 0;
+}
+
+.m-post-content a,
+.m-comment-content a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.m-post-content a:hover,
+.m-comment-content a:hover {
+    text-decoration: underline;
+}

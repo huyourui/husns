@@ -68,11 +68,7 @@
     <div class="m-post-item" data-id="<?php echo $post['id']; ?>">
         <a href="<?php echo $this->url('mobile/detail?id=' . $post['id']); ?>" style="text-decoration:none;color:inherit;">
             <div class="m-post-content">
-                <?php 
-                $content = Security::escape($post['content']);
-                $content = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('mobile/topic?keyword=$1') . '" onclick="event.stopPropagation();">#$1#</a>', $content);
-                echo Helper::parseEmojis($content);
-                ?>
+                <?php echo $post['content']; ?>
             </div>
             <?php if (!empty($post['images'])): ?>
             <div class="m-post-images many" style="margin-bottom:10px;">

@@ -472,6 +472,37 @@ class Helper
         
         return $content;
     }
+
+    /**
+     * 解析微博内容（统一处理）
+     * 
+     * 包括：HTML转义、话题链接、@用户链接、URL链接、表情
+     * 
+     * @param string $content 原始内容
+     * @param string $topicUrl 话题链接模板（可选）
+     * @param string $userUrl 用户链接模板（可选）
+     * @return string 解析后的内容
+     */
+    public static function parseContent($content, $topicUrl = null, $userUrl = null)
+    {
+        $content = Security::escape($content);
+
+        if ($topicUrl === null) {
+            $topicUrl = self::url('post/topic?keyword=$1');
+        }
+        $content = preg_replace('/#(.+?)#/', '<a href="' . $topicUrl . '">#$1#</a>', $content);
+
+        if ($userUrl === null) {
+            $userUrl = self::url('user/profile?username=$1');
+        }
+        $content = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;:：])/u', '<a href="' . $userUrl . '">@$1</a>', $content);
+
+        $content = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $content);
+
+        $content = self::parseEmojis($content);
+
+        return $content;
+    }
     
     public static function getEmojiList()
     {

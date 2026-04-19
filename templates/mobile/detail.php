@@ -74,11 +74,7 @@
                 <span class="m-comment-time"><?php echo Helper::formatTime($comment['created_at']); ?></span>
             </div>
             <div class="m-comment-content">
-                <?php 
-                $content = Security::escape($comment['content']);
-                $content = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$)/u', '<a href="' . Helper::url('mobile/user?username=$1') . '">@$1</a>', $content);
-                echo Helper::parseEmojis($content);
-                ?>
+                <?php echo $comment['content']; ?>
             </div>
         </div>
         <?php endforeach; ?>
