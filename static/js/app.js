@@ -1655,3 +1655,28 @@ window.playVideo = function(container) {
         video.play();
     }
 };
+
+// 语言切换器功能
+document.addEventListener('DOMContentLoaded', function() {
+    var languageToggle = document.getElementById('languageToggle');
+    var languageDropdown = document.getElementById('languageDropdown');
+    
+    if (languageToggle && languageDropdown) {
+        // 点击切换按钮显示/隐藏下拉菜单
+        languageToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var isVisible = languageDropdown.style.display !== 'none';
+            languageDropdown.style.display = isVisible ? 'none' : 'block';
+        });
+        
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', function() {
+            languageDropdown.style.display = 'none';
+        });
+        
+        // 阻止下拉菜单内部点击事件冒泡
+        languageDropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+});

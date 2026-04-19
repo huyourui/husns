@@ -10,7 +10,7 @@
  */
 ?>
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="<?php echo str_replace('_', '-', I18n::getCurrentLang()); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,6 +52,31 @@
                 <a href="<?php echo $this->url('user/register'); ?>">注册</a>
                 <?php endif; ?>
                 <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+                
+                <?php
+                // 语言切换器
+                $availableLangs = I18n::getAvailableLanguages();
+                $currentLang = I18n::getCurrentLang();
+                $langNames = [
+                    'zh-cn' => '简',
+                    'zh-tw' => '繁',
+                    'en' => 'EN'
+                ];
+                if (count($availableLangs) > 1):
+                ?>
+                <div class="language-switcher">
+                    <button class="language-toggle" id="languageToggle" title="切换语言">
+                        <?php echo $langNames[$currentLang] ?? strtoupper($currentLang); ?>
+                    </button>
+                    <div class="language-dropdown" id="languageDropdown" style="display:none;">
+                        <?php foreach ($availableLangs as $code => $info): ?>
+                        <a href="?lang=<?php echo $code; ?>" class="language-option<?php echo $code === $currentLang ? ' active' : ''; ?>">
+                            <?php echo $this->escape($info['name']); ?>
+                        </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
             </nav>
         </div>
     </header>

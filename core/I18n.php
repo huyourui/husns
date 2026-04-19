@@ -167,7 +167,8 @@ class I18n
         
         try {
             $db = Database::getInstance();
-            $result = $db->fetch("SELECT value FROM __PREFIX__settings WHERE `key` = 'language_mode'");
+            $prefix = DB_PREFIX;
+            $result = $db->fetch("SELECT value FROM {$prefix}settings WHERE `key` = 'language_mode'");
             if ($result && isset($result['value'])) {
                 return $result['value'];
             }
@@ -195,7 +196,8 @@ class I18n
         
         try {
             $db = Database::getInstance();
-            $result = $db->fetch("SELECT value FROM __PREFIX__settings WHERE `key` = 'default_language'");
+            $prefix = DB_PREFIX;
+            $result = $db->fetch("SELECT value FROM {$prefix}settings WHERE `key` = 'default_language'");
             if ($result && isset($result['value']) && !empty($result['value'])) {
                 return $result['value'];
             }
