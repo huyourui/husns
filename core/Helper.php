@@ -477,6 +477,7 @@ class Helper
      * 解析微博内容（统一处理）
      * 
      * 包括：HTML转义、话题链接、@用户链接、URL链接、表情
+     * 使用占位符机制避免双重转义
      * 
      * @param string $content 原始内容
      * @param string $topicUrl 话题链接模板（可选）
@@ -485,6 +486,17 @@ class Helper
      */
     public static function parseContent($content, $topicUrl = null, $userUrl = null)
     {
+        $urlPlaceholders = [];
+
+        preg_match_all('/(https?:\/\/[^\s<]+)/i', $content, $urlMatches);
+        if (!empty($urlMatches[1])) {
+            foreach ($urlMatches[1] as $idx => $url) {
+                $placeholder = "\x00URL_" . $idx . "_PLACEHOLDER\x00";
+                $urlPlaceholders[$placeholder] = $url;
+                $content = str_replace($url, $placeholder, $content);
+            }
+        }
+
         $content = Security::escape($content);
 
         if ($topicUrl === null) {
@@ -497,9 +509,13 @@ class Helper
         }
         $content = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;:：])/u', '<a href="' . $userUrl . '">@$1</a>', $content);
 
-        $content = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $content);
-
         $content = self::parseEmojis($content);
+
+        foreach ($urlPlaceholders as $placeholder => $url) {
+            $escapedPlaceholder = Security::escape($placeholder);
+            $linkTag = '<a href="' . $url . '" target="_blank" rel="noopener">' . $url . '</a>';
+            $content = str_replace($escapedPlaceholder, $linkTag, $content);
+        }
 
         return $content;
     }
