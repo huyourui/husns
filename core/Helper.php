@@ -486,35 +486,54 @@ class Helper
      */
     public static function parseContent($content, $topicUrl = null, $userUrl = null)
     {
-        $urlPlaceholders = [];
+        $placeholders = [];
+        $counter = 0;
 
         preg_match_all('/(https?:\/\/[^\s<]+)/i', $content, $urlMatches);
         if (!empty($urlMatches[1])) {
-            foreach ($urlMatches[1] as $idx => $url) {
-                $placeholder = "\x00URL_" . $idx . "_PLACEHOLDER\x00";
-                $urlPlaceholders[$placeholder] = $url;
+            foreach ($urlMatches[1] as $url) {
+                $placeholder = '[[' . 'URL' . $counter . ']]';
+                $placeholders[$placeholder] = '<a href="' . $url . '" target="_blank" rel="noopener">' . $url . '</a>';
                 $content = str_replace($url, $placeholder, $content);
+                $counter++;
+            }
+        }
+
+        preg_match_all('/#([^#\s]+)#/', $content, $topicMatches);
+        if (!empty($topicMatches[0])) {
+            if ($topicUrl === null) {
+                $topicUrl = self::url('post/topic?keyword=$1');
+            }
+            foreach ($topicMatches[0] as $idx => $fullMatch) {
+                $topicName = $topicMatches[1][$idx];
+                $placeholder = '[[' . 'TOPIC' . $counter . ']]';
+                $placeholders[$placeholder] = '<a href="' . str_replace('$1', urlencode($topicName), $topicUrl) . '">#' . $topicName . '#</a>';
+                $content = str_replace($fullMatch, $placeholder, $content);
+                $counter++;
+            }
+        }
+
+        preg_match_all('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;:：])/u', $content, $userMatches);
+        if (!empty($userMatches[0])) {
+            if ($userUrl === null) {
+                $userUrl = self::url('user/profile?username=$1');
+            }
+            foreach ($userMatches[0] as $idx => $fullMatch) {
+                $username = $userMatches[1][$idx];
+                $placeholder = '[[' . 'USER' . $counter . ']]';
+                $placeholders[$placeholder] = '<a href="' . str_replace('$1', urlencode($username), $userUrl) . '">@' . $username . '</a>';
+                $content = str_replace($fullMatch, $placeholder, $content);
+                $counter++;
             }
         }
 
         $content = Security::escape($content);
 
-        if ($topicUrl === null) {
-            $topicUrl = self::url('post/topic?keyword=$1');
-        }
-        $content = preg_replace('/#(.+?)#/', '<a href="' . $topicUrl . '">#$1#</a>', $content);
-
-        if ($userUrl === null) {
-            $userUrl = self::url('user/profile?username=$1');
-        }
-        $content = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;:：])/u', '<a href="' . $userUrl . '">@$1</a>', $content);
-
         $content = self::parseEmojis($content);
 
-        foreach ($urlPlaceholders as $placeholder => $url) {
+        foreach ($placeholders as $placeholder => $replacement) {
             $escapedPlaceholder = Security::escape($placeholder);
-            $linkTag = '<a href="' . $url . '" target="_blank" rel="noopener">' . $url . '</a>';
-            $content = str_replace($escapedPlaceholder, $linkTag, $content);
+            $content = str_replace($escapedPlaceholder, $replacement, $content);
         }
 
         return $content;
