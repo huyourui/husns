@@ -228,6 +228,13 @@ php tests/run.php Helper
 
 ## 更新日志
 
+### v3.2.9 (2026-04-19)
+- 🐛 **Bug修复**
+  - 修复移动端内容二次转义导致HTML标签显示为文本的问题
+  - 重构内容解析逻辑：Model层只返回原始内容，Controller层负责解析
+  - 电脑端和移动端分别调用 Helper::parseContent() 进行内容解析
+  - 避免Model层和Controller层重复解析导致HTML被转义
+
 ### v3.2.8 (2026-04-19)
 - 🐛 **Bug修复**
   - 修复PostModel中内容二次转义导致HTML标签显示为文本的问题

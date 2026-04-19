@@ -345,7 +345,7 @@ class UserController extends Controller
         $page = (int)Helper::get('page', 1);
         $posts = $postModel->getUserPosts($userId, $page);
         foreach ($posts['items'] as &$post) {
-            $post['content'] = Helper::parseEmojis($post['content']);
+            $post['content'] = Helper::parseContent($post['content']);
         }
         unset($post);
 

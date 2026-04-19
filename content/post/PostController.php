@@ -55,12 +55,12 @@ class IndexController extends Controller
         
         $pinnedPost = $this->postModel->getPinnedPostForDisplay($userId ? $userId : 0);
         if ($pinnedPost) {
-            $pinnedPost['content'] = Helper::parseEmojis($pinnedPost['content']);
+            $pinnedPost['content'] = Helper::parseContent($pinnedPost['content']);
         }
         
         $posts = $this->postModel->getTimeline($page, $pageSize, $userId, $tab);
         foreach ($posts as &$post) {
-            $post['content'] = Helper::parseEmojis($post['content']);
+            $post['content'] = Helper::parseContent($post['content']);
         }
         unset($post);
         
@@ -988,7 +988,7 @@ class PostController extends Controller
         
         $posts = $this->postModel->getPostsByTopic($keyword, $page, $pageSize);
         foreach ($posts as &$post) {
-            $post['content'] = Helper::parseEmojis($post['content']);
+            $post['content'] = Helper::parseContent($post['content']);
         }
         unset($post);
         
@@ -1019,7 +1019,7 @@ class PostController extends Controller
         
         $posts = $this->postModel->getFeaturedPosts($page, $pageSize);
         foreach ($posts as &$post) {
-            $post['content'] = Helper::parseEmojis($post['content']);
+            $post['content'] = Helper::parseContent($post['content']);
         }
         unset($post);
         
