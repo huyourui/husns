@@ -466,19 +466,33 @@
 
         loadNotifications: function() {
             var self = this;
+            this.showLoading();
             this.api('notifications', { page: 1 }).then(function(res) {
+                self.hideLoading();
+                console.log('notifications response:', res);
                 if (res.code === 0) {
                     var container = document.getElementById('notificationList');
                     if (container) {
                         container.innerHTML = '';
-                        res.data.items.forEach(function(notification) {
-                            container.insertAdjacentHTML('beforeend', self.renderNotificationItem(notification));
-                        });
+                        var items = res.data.items || [];
+                        if (items.length === 0) {
+                            container.innerHTML = '<div class="empty-state">暂无消息</div>';
+                        } else {
+                            items.forEach(function(notification) {
+                                container.insertAdjacentHTML('beforeend', self.renderNotificationItem(notification));
+                            });
+                        }
                     }
-                    self.updateUnreadBadge(res.data.unread_count);
+                    self.updateUnreadBadge(res.data.unread_count || 0);
                 } else if (res.code === 401) {
                     location.href = self.baseUrl + '/?r=mobile/login';
+                } else {
+                    self.showToast(res.message || '加载消息失败', 'error');
                 }
+            }).catch(function(err) {
+                self.hideLoading();
+                console.error('loadNotifications error:', err);
+                self.showToast('加载消息失败: ' + (err.message || '未知错误'), 'error');
             });
         },
 
@@ -1032,11 +1046,15 @@
         },
 
         renderNotificationItem: function(notification) {
+            var avatar = notification.sender_avatar || '<div class="avatar-placeholder">?</div>';
+            var title = notification.title || '系统消息';
+            var time = notification.time_ago || '';
+            
             var html = '<div class="notification-item ' + (notification.is_read ? '' : 'unread') + '" data-id="' + notification.id + '">' +
-                '<div class="notification-avatar">' + notification.sender_avatar + '</div>' +
+                '<div class="notification-avatar">' + avatar + '</div>' +
                 '<div class="notification-body">' +
-                '<div class="notification-title">' + this.escapeHtml(notification.title) + '</div>' +
-                '<div class="notification-time">' + notification.time_ago + '</div>' +
+                '<div class="notification-title">' + this.escapeHtml(title) + '</div>' +
+                '<div class="notification-time">' + time + '</div>' +
                 '</div>' +
                 '</div>';
 
