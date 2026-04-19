@@ -50,7 +50,9 @@
     ?>
     <a href="<?php echo $detailUrl; ?>" class="m-notification-item <?php echo $notification['is_read'] ? '' : 'unread'; ?>" data-id="<?php echo $notification['id']; ?>" onclick="markAsRead(this, event)">
         <?php if ($notification['sender_id']): ?>
-        <?php echo $this->avatar($notification['sender_avatar'] ?? null, $notification['sender_name'] ?? '', 'small'); ?>
+        <div class="m-notification-avatar">
+            <?php echo $this->avatar($notification['sender_avatar'] ?? null, $notification['sender_name'] ?? '', 40); ?>
+        </div>
         <?php else: ?>
         <div class="m-notification-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--bg-secondary);font-size:20px;"><?php echo $typeIcon; ?></div>
         <?php endif; ?>
