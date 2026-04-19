@@ -806,8 +806,15 @@ class MobileApiController extends Controller
         $page = (int)$this->input('page', 1);
         $pageSize = 20;
 
+        // 调试信息
+        error_log('notifications API called, userId: ' . $userId);
+
         $notifications = $this->notificationModel->getUserNotifications($userId, $page, $pageSize);
         $unreadCount = $this->notificationModel->getUnreadCount($userId);
+
+        // 调试信息
+        error_log('notifications count: ' . count($notifications));
+        error_log('unread count: ' . $unreadCount);
 
         $formattedNotifications = [];
         foreach ($notifications as $notification) {

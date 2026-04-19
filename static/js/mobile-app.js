@@ -15,12 +15,15 @@
         currentUser: null,
         
         init: function(baseUrl) {
+            console.log('App.init called, baseUrl:', baseUrl);
             this.baseUrl = baseUrl;
             this.bindEvents();
             var self = this;
             // 直接调用initPage，不等待checkLogin
+            console.log('Calling initPage...');
             this.initPage();
             // 异步检查登录状态
+            console.log('Calling checkLogin...');
             this.checkLogin();
         },
 
