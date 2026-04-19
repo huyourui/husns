@@ -692,13 +692,25 @@ class Helper
 
         $userAgent = $_SERVER['HTTP_USER_AGENT'];
 
+        // PC端浏览器关键字（包含这些关键字则不是移动端）
+        $pcKeywords = ['Windows NT', 'Macintosh', 'X11', 'Linux x86_64'];
+        $isPC = false;
+        foreach ($pcKeywords as $keyword) {
+            if (stripos($userAgent, $keyword) !== false) {
+                $isPC = true;
+                break;
+            }
+        }
+
         $mobileKeywords = [
             'Mobile', 'Android', 'iPhone', 'iPad', 'iPod', 'Windows Phone',
             'BlackBerry', 'webOS', 'Symbian', 'Opera Mini', 'IEMobile',
             'HTC', 'Nokia', 'Samsung', 'SonyEricsson', 'Motorola',
-            'Kindle', 'Silk', 'MQQBrowser', 'MicroMessenger', 'WeiBo',
-            'UCBrowser', 'Quark', 'Baidu', 'Sogou', 'LieBao'
+            'Kindle', 'Silk'
         ];
+
+        // 国内主流移动端浏览器（仅在非PC端时检测）
+        $mobileBrowsers = ['MQQBrowser', 'MicroMessenger', 'WeiBo', 'UCBrowser', 'Quark', 'Baidu', 'Sogou', 'LieBao'];
 
         foreach ($mobileKeywords as $keyword) {
             if (stripos($userAgent, $keyword) !== false) {
@@ -706,6 +718,15 @@ class Helper
                     continue;
                 }
                 return true;
+            }
+        }
+
+        // 对于国内浏览器，仅在非PC端时判定为移动端
+        if (!$isPC) {
+            foreach ($mobileBrowsers as $keyword) {
+                if (stripos($userAgent, $keyword) !== false) {
+                    return true;
+                }
             }
         }
 
