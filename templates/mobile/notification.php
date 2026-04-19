@@ -56,10 +56,12 @@
         <?php endif; ?>
         <div class="m-notification-content">
             <div class="m-notification-title">
-                <?php if ($notification['type'] == 'mention'): ?>
-                <span style="color:var(--primary-color);font-weight:600;">@</span>
-                <?php endif; ?>
+                <?php if ($notification['type'] == 'mention' && $notification['sender_id']): ?>
+                <a href="<?php echo $this->url('mobile/user?id=' . $notification['sender_id']); ?>" style="color:var(--primary-color);font-weight:600;text-decoration:none;" onclick="event.stopPropagation();">@<?php echo $this->escape($notification['sender_name'] ?? ''); ?></a>
+                <?php echo $notification['type'] == 'mention' ? '在' . ($data['comment_id'] ? '评论中' : '动态中') . '提到了你' : ''; ?>
+                <?php else: ?>
                 <?php echo $this->escape($notification['title']); ?>
+                <?php endif; ?>
             </div>
             <?php if ($notification['content']): ?>
             <div style="font-size:13px;color:var(--text-secondary);margin-top:3px;"><?php echo $this->escape(mb_substr($notification['content'], 0, 50, 'UTF-8')); ?></div>
