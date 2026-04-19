@@ -217,11 +217,8 @@ class PostModel extends Model
             $post['attachments'] = is_array($post['attachments']) ? $post['attachments'] : ($post['attachments'] ? json_decode($post['attachments'], true) : []);
             $post['videos'] = is_array($post['videos']) ? $post['videos'] : ($post['videos'] ? json_decode($post['videos'], true) : []);
             $post['time_ago'] = Helper::formatTime($post['created_at']);
-            $post['content'] = Security::escape($post['content']);
-            $post['content'] = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $post['content']);
-            $post['content'] = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|:|$|\/\/)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $post['content']);
-            $post['content'] = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $post['content']);
-            $post['content'] = Helper::parseEmojis($post['content']);
+            // 使用Helper::parseContent统一解析内容，避免二次转义
+            $post['content'] = Helper::parseContent($post['content']);
             $post['content'] = $this->parseHideContent($post['content'], $id, $currentUserId, $post['user_id']);
         } else {
             $post = ['deleted' => true];
@@ -598,10 +595,8 @@ class PostModel extends Model
             $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
             $post['time_ago'] = Helper::formatTime($post['created_at']);
             $post['content'] = ltrim($post['content']);
-            $post['content'] = Security::escape($post['content']);
-            $post['content'] = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $post['content']);
-            $post['content'] = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|:|$|\/\/)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $post['content']);
-            $post['content'] = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $post['content']);
+            // 使用Helper::parseContent统一解析内容，避免二次转义
+            $post['content'] = Helper::parseContent($post['content']);
             
             $post['attachments'] = is_array($post['attachments']) ? $post['attachments'] : ($post['attachments'] ? json_decode($post['attachments'], true) : []);
             $post['videos'] = is_array($post['videos']) ? $post['videos'] : ($post['videos'] ? json_decode($post['videos'], true) : []);

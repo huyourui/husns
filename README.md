@@ -228,6 +228,13 @@ php tests/run.php Helper
 
 ## 更新日志
 
+### v3.2.8 (2026-04-19)
+- 🐛 **Bug修复**
+  - 修复PostModel中内容二次转义导致HTML标签显示为文本的问题
+  - 统一使用 Helper::parseContent() 方法解析内容
+  - 移除 formatPosts() 和 getOriginalPost() 中的手动转义和正则替换
+  - 确保电脑端和移动端内容解析逻辑一致
+
 ### v3.2.7 (2026-04-19)
 - 🐛 **Bug修复**
   - 彻底重写 parseContent() 方法，使用位置索引分词机制
