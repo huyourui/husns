@@ -686,13 +686,25 @@ class MobileController extends Controller
 
         // 验证文件类型
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $file['tmp_name']);
-        finfo_close($finfo);
-
-        if (!in_array($mimeType, $allowedTypes)) {
-            $this->jsonError('只允许上传图片文件');
+        $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        
+        // 获取文件扩展名
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowedExts)) {
+            $this->jsonError('只允许上传图片文件(jpg, png, gif, webp)');
             return;
+        }
+        
+        // 如果可用，使用finfo验证MIME类型
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+
+            if (!in_array($mimeType, $allowedTypes)) {
+                $this->jsonError('文件类型不正确');
+                return;
+            }
         }
 
         // 验证文件大小
@@ -703,7 +715,6 @@ class MobileController extends Controller
         }
 
         // 生成文件名
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
         $filename = date('Ymd') . '/' . uniqid() . '.' . $ext;
         $filepath = UPLOAD_PATH . $filename;
 

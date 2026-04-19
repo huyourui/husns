@@ -138,7 +138,19 @@
                 },
                 body: formData
             })
-            .then(function(res) { return res.json(); })
+            .then(function(res) {
+                if (!res.ok) {
+                    throw new Error('HTTP error: ' + res.status);
+                }
+                return res.text().then(function(text) {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('JSON parse error:', text);
+                        throw new Error('服务器返回错误');
+                    }
+                });
+            })
             .then(function(data) {
                 if (data.code === 0) {
                     M.showToast('发布成功', 'success');
@@ -153,7 +165,7 @@
             })
             .catch(function(err) {
                 console.error('发布失败:', err);
-                M.showToast('网络错误，请检查网络连接', 'error');
+                M.showToast('网络错误: ' + err.message, 'error');
                 submitBtn.disabled = false;
                 submitBtn.textContent = '发布';
             });
@@ -287,7 +299,19 @@
                             method: 'POST',
                             body: formData
                         })
-                        .then(function(res) { return res.json(); })
+                        .then(function(res) {
+                            if (!res.ok) {
+                                throw new Error('HTTP error: ' + res.status);
+                            }
+                            return res.text().then(function(text) {
+                                try {
+                                    return JSON.parse(text);
+                                } catch (e) {
+                                    console.error('JSON parse error:', text);
+                                    throw new Error('Invalid JSON response');
+                                }
+                            });
+                        })
                         .then(function(data) {
                             var item = document.getElementById(tempId);
                             if (data.code === 0 && data.data && data.data.path) {
@@ -303,8 +327,9 @@
                                 M.updateImageCount();
                             }
                         })
-                        .catch(function() {
-                            M.showToast('图片上传失败', 'error');
+                        .catch(function(err) {
+                            console.error('图片上传失败:', err);
+                            M.showToast('图片上传失败: ' + err.message, 'error');
                             var item = document.getElementById(tempId);
                             if (item) item.remove();
                             M.updateImageCount();
