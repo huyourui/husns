@@ -187,6 +187,18 @@ class App
             return;
         }
 
+        // 处理移动端API路由 mobileApi/xxx
+        if (strpos($path, 'mobileApi/') === 0) {
+            $this->controller = 'MobileApiController';
+            $actionPath = substr($path, strlen('mobileApi/'));
+            if (!empty($actionPath)) {
+                $this->action = $actionPath;
+            } else {
+                $this->action = 'index';
+            }
+            return;
+        }
+
         $segments = explode('/', $path);
         
         $controllerName = ucfirst($segments[0]) . 'Controller';
