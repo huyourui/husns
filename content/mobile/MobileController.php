@@ -10,26 +10,19 @@
  */
 
 /**
- * 移动端控制器
+ * 移动端控制器（基于API的新版本）
  * 
- * 提供移动端专属界面
+ * 提供移动端页面渲染，数据通过前端JavaScript调用API获取
  */
 class MobileController extends Controller
 {
-    private $postModel;
-    private $userModel;
-
     public function __construct()
     {
         parent::__construct();
-        $this->postModel = new PostModel();
-        $this->userModel = new UserModel();
         $this->view->setTheme('mobile');
+        $this->view->setLayout('app');
     }
 
-    /**
-     * 移动端首页
-     */
     public function index()
     {
         $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
@@ -39,39 +32,15 @@ class MobileController extends Controller
             return;
         }
 
-        $page = (int)Helper::get('page', 1);
         $tab = Helper::get('tab', 'all');
-        $pageSize = 15;
 
-        $posts = $this->postModel->getTimeline($page, $pageSize, $userId, $tab);
-        
-        $topicUrl = Helper::url('mobile/topic?keyword=$1');
-        $userUrl = Helper::url('mobile/user?username=$1');
-        foreach ($posts as &$post) {
-            $post['content'] = Helper::parseContent($post['content'], $topicUrl, $userUrl);
-            $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
-        }
-        unset($post);
-
-        $unreadCount = 0;
-        if ($userId) {
-            $notificationModel = new NotificationModel();
-            $unreadCount = $notificationModel->getUnreadCount($userId);
-        }
-
-        $this->render('index', [
-            'posts' => $posts,
-            'page' => $page,
+        $this->render('app/index', [
             'tab' => $tab,
-            'unreadCount' => $unreadCount,
             'currentPage' => 'home',
             'headerTitle' => Setting::getSiteName()
         ]);
     }
 
-    /**
-     * 热门页面
-     */
     public function hot()
     {
         $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
@@ -81,55 +50,12 @@ class MobileController extends Controller
             return;
         }
 
-        $page = max(1, (int)Helper::get('page', 1));
-        $pageSize = 15;
-        $threshold = max(0, (int)Setting::getHotThreshold());
-
-        $offset = ($page - 1) * $pageSize;
-
-        $sql = "SELECT p.*, u.username, u.avatar,
-                    (
-                        (SELECT COUNT(*) FROM __PREFIX__likes l WHERE l.post_id = p.id AND l.user_id != p.user_id) +
-                        (SELECT COUNT(*) FROM __PREFIX__comments c WHERE c.post_id = p.id AND c.user_id != p.user_id AND c.status = 1) +
-                        (SELECT COUNT(*) FROM __PREFIX__posts rp WHERE rp.repost_id = p.id AND rp.user_id != p.user_id AND rp.status = 1) +
-                        (SELECT COUNT(*) FROM __PREFIX__favorites f WHERE f.post_id = p.id AND f.user_id != p.user_id)
-                    ) as hot_score
-                FROM __PREFIX__posts p 
-                INNER JOIN __PREFIX__users u ON p.user_id = u.id 
-                WHERE p.status = 1 
-                HAVING hot_score >= ?
-                ORDER BY p.created_at DESC 
-                LIMIT ?, ?";
-
-        $posts = $this->db->fetchAll($sql, [$threshold, $offset, $pageSize]);
-
-        $topicUrl = Helper::url('mobile/topic?keyword=$1');
-        $userUrl = Helper::url('mobile/user?username=$1');
-        foreach ($posts as &$post) {
-            $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
-            $post['time_ago'] = Helper::formatTime($post['created_at']);
-            $post['content'] = Helper::parseContent($post['content'], $topicUrl, $userUrl);
-        }
-        unset($post);
-
-        $unreadCount = 0;
-        if ($userId) {
-            $notificationModel = new NotificationModel();
-            $unreadCount = $notificationModel->getUnreadCount($userId);
-        }
-
-        $this->render('hot', [
-            'posts' => $posts,
-            'page' => $page,
-            'unreadCount' => $unreadCount,
+        $this->render('app/hot', [
             'currentPage' => 'hot',
             'headerTitle' => '热门'
         ]);
     }
 
-    /**
-     * 登录页面
-     */
     public function login()
     {
         if (isset($_SESSION['user_id'])) {
@@ -137,44 +63,12 @@ class MobileController extends Controller
             return;
         }
 
-        if (Helper::isPost()) {
-            $username = trim(Helper::post('username'));
-            $password = Helper::post('password');
-
-            if (empty($username) || empty($password)) {
-                Helper::setFlash('error', '请填写用户名和密码');
-                $this->redirect(Helper::url('mobile/login'));
-                return;
-            }
-
-            $user = $this->userModel->login($username, $password);
-
-            if ($user) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['is_admin'] = $user['is_admin'];
-
-                session_regenerate_id(true);
-
-                Helper::setFlash('success', '登录成功');
-                $this->redirect(Helper::url('mobile'));
-            } else {
-                Helper::setFlash('error', '用户名或密码错误');
-                $this->redirect(Helper::url('mobile/login'));
-            }
-            return;
-        }
-
-        $this->view->setLayout('main');
-        $this->render('login', [
+        $this->render('app/login', [
             'hideTabBar' => true,
             'headerTitle' => '登录'
         ]);
     }
 
-    /**
-     * 注册页面
-     */
     public function register()
     {
         if (isset($_SESSION['user_id'])) {
@@ -191,126 +85,7 @@ class MobileController extends Controller
         $emailVerifyEnabled = Setting::isRegistrationEmailVerifyEnabled();
         $requireInviteCode = (int)Setting::get('require_invite_code', 0) === 1;
 
-        if (Helper::isPost()) {
-            $username = trim(Helper::post('username'));
-            $password = Helper::post('password');
-            $confirmPassword = Helper::post('confirm_password');
-            $email = trim(Helper::post('email'));
-            $emailCode = trim(Helper::post('email_code'));
-            $inviteCode = trim(Helper::post('invite_code'));
-
-            $errors = [];
-
-            $minLength = Setting::getUsernameMinLength();
-            $maxLength = Setting::getUsernameMaxLength();
-            $usernameLength = mb_strlen($username, 'UTF-8');
-
-            if ($usernameLength < $minLength) {
-                $errors[] = '用户名至少需要' . $minLength . '个字符';
-            } elseif ($usernameLength > $maxLength) {
-                $errors[] = '用户名最多允许' . $maxLength . '个字符';
-            } elseif (!preg_match('/^[a-zA-Z0-9_\x{4e00}-\x{9fa5}]+$/u', $username)) {
-                $errors[] = '用户名只能包含字母、数字、下划线和中文';
-            }
-
-            $bannedUsernames = Setting::getBannedUsernames();
-            if (!empty($bannedUsernames)) {
-                $usernameLower = strtolower($username);
-                foreach ($bannedUsernames as $banned) {
-                    if (strpos($usernameLower, strtolower($banned)) !== false) {
-                        $errors[] = '用户名包含禁用字符';
-                        break;
-                    }
-                }
-            }
-
-            if ($this->userModel->findByUsername($username)) {
-                $errors[] = '用户名已存在';
-            }
-
-            if (strlen($password) < 6) {
-                $errors[] = '密码长度至少6位';
-            }
-
-            if ($password !== $confirmPassword) {
-                $errors[] = '两次密码输入不一致';
-            }
-
-            if ($emailVerifyEnabled || !empty($email)) {
-                if (!Security::validateEmail($email)) {
-                    $errors[] = '邮箱格式不正确';
-                } else {
-                    $allowedSuffixes = Setting::getAllowedEmailSuffixes();
-                    if (!empty($allowedSuffixes)) {
-                        $emailSuffix = substr($email, strrpos($email, '@') + 1);
-                        if (!in_array($emailSuffix, $allowedSuffixes)) {
-                            $errors[] = '只允许使用以下邮箱后缀注册：' . implode(', ', $allowedSuffixes);
-                        }
-                    }
-
-                    if ($this->userModel->findByEmail($email)) {
-                        $errors[] = '邮箱已被注册';
-                    }
-                }
-            }
-
-            if ($emailVerifyEnabled) {
-                if (empty($emailCode)) {
-                    $errors[] = '请输入邮箱验证码';
-                } elseif (!Mailer::verifyCode($email, $emailCode, '注册')) {
-                    $errors[] = '验证码错误或已过期';
-                }
-            }
-
-            if ($requireInviteCode) {
-                if (empty($inviteCode)) {
-                    $errors[] = '请输入邀请码';
-                } else {
-                    require_once ROOT_PATH . 'content/invite/InviteController.php';
-                    $validCode = InviteController::verifyCode($inviteCode);
-                    if (!$validCode) {
-                        $errors[] = '邀请码无效或已被使用';
-                    }
-                }
-            }
-
-            if (!empty($errors)) {
-                Helper::setFlash('error', implode('，', $errors));
-                $this->redirect(Helper::url('mobile/register'));
-                return;
-            }
-
-            $userId = $this->userModel->register([
-                'username' => $username,
-                'password' => $password,
-                'email' => $email ?: ''
-            ]);
-
-            if ($userId) {
-                if ($requireInviteCode && !empty($inviteCode)) {
-                    require_once ROOT_PATH . 'content/invite/InviteController.php';
-                    InviteController::useCode($inviteCode, $userId);
-                }
-
-                $_SESSION['user_id'] = $userId;
-                $_SESSION['username'] = $username;
-                $_SESSION['is_admin'] = 0;
-
-                session_regenerate_id(true);
-
-                Hook::trigger('user_register', ['id' => $userId, 'username' => $username, 'email' => $email]);
-                Hook::trigger('user_login', ['id' => $userId, 'username' => $username]);
-
-                Helper::setFlash('success', '注册成功');
-                $this->redirect(Helper::url('mobile'));
-            } else {
-                Helper::setFlash('error', '注册失败');
-                $this->redirect(Helper::url('mobile/register'));
-            }
-            return;
-        }
-
-        $this->render('register', [
+        $this->render('app/register', [
             'hideTabBar' => true,
             'headerTitle' => '注册',
             'emailVerifyEnabled' => $emailVerifyEnabled,
@@ -318,18 +93,12 @@ class MobileController extends Controller
         ]);
     }
 
-    /**
-     * 退出登录
-     */
     public function logout()
     {
         session_destroy();
         $this->redirect(Helper::url('mobile/login'));
     }
 
-    /**
-     * 发布微博页面
-     */
     public function publish()
     {
         if (!isset($_SESSION['user_id'])) {
@@ -337,16 +106,13 @@ class MobileController extends Controller
             return;
         }
 
-        $this->render('publish', [
+        $this->render('app/publish', [
             'currentPage' => 'publish',
             'headerTitle' => '发布微博',
             'showBack' => true
         ]);
     }
 
-    /**
-     * 微博详情页
-     */
     public function detail()
     {
         $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
@@ -357,52 +123,18 @@ class MobileController extends Controller
         }
 
         $id = (int)Helper::get('id');
-
         if (!$id) {
             $this->redirect(Helper::url('mobile'));
             return;
         }
 
-        $post = $this->postModel->getPost($id, $userId ? $userId : 0);
-
-        if (!$post || $post['status'] != 1) {
-            Helper::setFlash('error', '微博不存在');
-            $this->redirect(Helper::url('mobile'));
-            return;
-        }
-
-        $post['formatted_content'] = Helper::parseContent(
-            $post['content'],
-            Helper::url('mobile/topic?keyword=$1'),
-            Helper::url('mobile/user?username=$1')
-        );
-        $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
-
-        $comments = $this->postModel->getComments($id);
-        $userUrl = Helper::url('mobile/user?username=$1');
-        foreach ($comments as &$comment) {
-            $comment['content'] = Helper::parseContent($comment['content'], null, $userUrl);
-        }
-        unset($comment);
-
-        $unreadCount = 0;
-        if ($userId) {
-            $notificationModel = new NotificationModel();
-            $unreadCount = $notificationModel->getUnreadCount($userId);
-        }
-
-        $this->render('detail', [
-            'post' => $post,
-            'comments' => $comments,
-            'unreadCount' => $unreadCount,
+        $this->render('app/detail', [
+            'id' => $id,
             'showBack' => true,
             'headerTitle' => '微博详情'
         ]);
     }
 
-    /**
-     * 消息通知页面
-     */
     public function notification()
     {
         if (!isset($_SESSION['user_id'])) {
@@ -410,73 +142,12 @@ class MobileController extends Controller
             return;
         }
 
-        $page = (int)Helper::get('page', 1);
-        $pageSize = 20;
-
-        $notificationModel = new NotificationModel();
-        $notifications = $notificationModel->getUserNotifications($_SESSION['user_id'], $page, $pageSize);
-        $unreadCount = $notificationModel->getUnreadCount($_SESSION['user_id']);
-
-        $this->render('notification', [
-            'notifications' => $notifications,
-            'page' => $page,
-            'unreadCount' => $unreadCount,
+        $this->render('app/notification', [
             'currentPage' => 'notification',
             'headerTitle' => '消息'
         ]);
     }
 
-    /**
-     * 标记单条消息为已读
-     */
-    public function markRead()
-    {
-        if (!isset($_SESSION['user_id'])) {
-            $this->jsonError('请先登录', 401);
-            return;
-        }
-
-        $id = (int)Helper::post('id', Helper::get('id'));
-
-        if (!$id) {
-            $this->jsonError('参数错误');
-            return;
-        }
-
-        $notificationModel = new NotificationModel();
-        $result = $notificationModel->markAsRead($id, $_SESSION['user_id']);
-
-        if ($result) {
-            $unreadCount = $notificationModel->getUnreadCount($_SESSION['user_id']);
-            $this->jsonSuccess(['unread_count' => $unreadCount], '标记成功');
-        } else {
-            $this->jsonError('操作失败');
-        }
-    }
-
-    /**
-     * 标记所有消息为已读
-     */
-    public function markAllRead()
-    {
-        if (!isset($_SESSION['user_id'])) {
-            $this->jsonError('请先登录', 401);
-            return;
-        }
-
-        $notificationModel = new NotificationModel();
-        $result = $notificationModel->markAllAsRead($_SESSION['user_id']);
-
-        if ($result !== false) {
-            $this->jsonSuccess(null, '全部已读');
-        } else {
-            $this->jsonError('操作失败');
-        }
-    }
-
-    /**
-     * 个人中心页面
-     */
     public function profile()
     {
         if (!isset($_SESSION['user_id'])) {
@@ -484,41 +155,12 @@ class MobileController extends Controller
             return;
         }
 
-        $user = $this->userModel->find($_SESSION['user_id']);
-        $postCount = $this->postModel->count('user_id = ? AND status = 1', [$_SESSION['user_id']]);
-        $followCount = $this->userModel->getFollowCount($_SESSION['user_id']);
-
-        $page = (int)Helper::get('page', 1);
-        $pageSize = 10;
-        $postsData = $this->postModel->getUserPosts($_SESSION['user_id'], $page, $pageSize);
-        $posts = $postsData['items'] ?? [];
-
-        $topicUrl = Helper::url('mobile/topic?keyword=$1');
-        $userUrl = Helper::url('mobile/user?username=$1');
-        foreach ($posts as &$post) {
-            $post['content'] = Helper::parseContent($post['content'], $topicUrl, $userUrl);
-            $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
-        }
-        unset($post);
-
-        $notificationModel = new NotificationModel();
-        $unreadCount = $notificationModel->getUnreadCount($_SESSION['user_id']);
-
-        $this->render('profile', [
-            'user' => $user,
-            'postCount' => $postCount,
-            'followCount' => $followCount,
-            'posts' => $posts,
-            'page' => $page,
-            'unreadCount' => $unreadCount,
+        $this->render('app/profile', [
             'currentPage' => 'profile',
             'headerTitle' => '我的'
         ]);
     }
 
-    /**
-     * 用户主页
-     */
     public function user()
     {
         $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
@@ -531,63 +173,19 @@ class MobileController extends Controller
         $username = Helper::get('username');
         $targetId = (int)Helper::get('id');
 
-        if ($username) {
-            $targetUser = $this->userModel->findByUsername($username);
-        } elseif ($targetId) {
-            $targetUser = $this->userModel->find($targetId);
-        } else {
+        if (!$username && !$targetId) {
             $this->redirect(Helper::url('mobile'));
             return;
         }
 
-        if (!$targetUser) {
-            Helper::setFlash('error', '用户不存在');
-            $this->redirect(Helper::url('mobile'));
-            return;
-        }
-
-        $postCount = $this->postModel->count('user_id = ? AND status = 1', [$targetUser['id']]);
-        $followCount = $this->userModel->getFollowCount($targetUser['id']);
-
-        $page = (int)Helper::get('page', 1);
-        $pageSize = 10;
-        $posts = $this->postModel->getUserPosts($targetUser['id'], $page, $pageSize);
-
-        $topicUrl = Helper::url('mobile/topic?keyword=$1');
-        $userUrl = Helper::url('mobile/user?username=$1');
-        foreach ($posts as &$post) {
-            $post['content'] = Helper::parseContent($post['content'], $topicUrl, $userUrl);
-            $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
-        }
-        unset($post);
-
-        $isFollowing = false;
-        if ($userId) {
-            $isFollowing = $this->userModel->isFollowing($userId, $targetUser['id']);
-        }
-
-        $unreadCount = 0;
-        if ($userId) {
-            $notificationModel = new NotificationModel();
-            $unreadCount = $notificationModel->getUnreadCount($userId);
-        }
-
-        $this->render('user', [
-            'targetUser' => $targetUser,
-            'postCount' => $postCount,
-            'followCount' => $followCount,
-            'posts' => $posts,
-            'page' => $page,
-            'isFollowing' => $isFollowing,
-            'unreadCount' => $unreadCount,
+        $this->render('app/user', [
+            'userId' => $targetId,
+            'username' => $username,
             'showBack' => true,
-            'headerTitle' => $targetUser['username']
+            'headerTitle' => $username ?: '用户主页'
         ]);
     }
 
-    /**
-     * 话题页面
-     */
     public function topic()
     {
         $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
@@ -598,144 +196,18 @@ class MobileController extends Controller
         }
 
         $keyword = trim(Helper::get('keyword'));
-        
         if (empty($keyword)) {
             $this->redirect(Helper::url('mobile'));
             return;
         }
 
-        $page = (int)Helper::get('page', 1);
-        $pageSize = 15;
-
-        $posts = $this->postModel->getPostsByTopic($keyword, $page, $pageSize);
-
-        $topicUrl = Helper::url('mobile/topic?keyword=$1');
-        $userUrl = Helper::url('mobile/user?username=$1');
-        foreach ($posts as &$post) {
-            $post['content'] = Helper::parseContent($post['content'], $topicUrl, $userUrl);
-            $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
-        }
-        unset($post);
-
-        $unreadCount = 0;
-        if ($userId) {
-            $notificationModel = new NotificationModel();
-            $unreadCount = $notificationModel->getUnreadCount($userId);
-        }
-
-        $this->render('topic', [
+        $this->render('app/topic', [
             'keyword' => $keyword,
-            'posts' => $posts,
-            'page' => $page,
-            'unreadCount' => $unreadCount,
             'showBack' => true,
             'headerTitle' => '#' . $keyword . '#'
         ]);
     }
 
-    /**
-     * 设置页面
-     */
-    public function settings()
-    {
-        if (!isset($_SESSION['user_id'])) {
-            $this->redirect(Helper::url('mobile/login'));
-            return;
-        }
-
-        $user = $this->userModel->find($_SESSION['user_id']);
-
-        $this->render('settings', [
-            'user' => $user,
-            'showBack' => true,
-            'headerTitle' => '设置'
-        ]);
-    }
-
-    /**
-     * 上传图片（用于发布微博时的图片上传）
-     */
-    public function uploadImage()
-    {
-        if (!isset($_SESSION['user_id'])) {
-            $this->jsonError('请先登录', 401);
-            return;
-        }
-
-        if (empty($_FILES['image'])) {
-            $this->jsonError('没有上传文件');
-            return;
-        }
-
-        $file = $_FILES['image'];
-
-        // 检查上传错误
-        if ($file['error'] !== UPLOAD_ERR_OK) {
-            $errorMsg = '上传失败';
-            switch ($file['error']) {
-                case UPLOAD_ERR_INI_SIZE:
-                case UPLOAD_ERR_FORM_SIZE:
-                    $errorMsg = '文件大小超过限制';
-                    break;
-                case UPLOAD_ERR_PARTIAL:
-                    $errorMsg = '文件上传不完整';
-                    break;
-            }
-            $this->jsonError($errorMsg);
-            return;
-        }
-
-        // 验证文件类型
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        
-        // 获取文件扩展名
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, $allowedExts)) {
-            $this->jsonError('只允许上传图片文件(jpg, png, gif, webp)');
-            return;
-        }
-        
-        // 如果可用，使用finfo验证MIME类型
-        if (function_exists('finfo_open')) {
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mimeType = finfo_file($finfo, $file['tmp_name']);
-            finfo_close($finfo);
-
-            if (!in_array($mimeType, $allowedTypes)) {
-                $this->jsonError('文件类型不正确');
-                return;
-            }
-        }
-
-        // 验证文件大小
-        $maxSize = UPLOAD_MAX_SIZE;
-        if ($file['size'] > $maxSize) {
-            $this->jsonError('文件大小超过' . ($maxSize / 1024 / 1024) . 'MB限制');
-            return;
-        }
-
-        // 生成文件名
-        $filename = date('Ymd') . '/' . uniqid() . '.' . $ext;
-        $filepath = UPLOAD_PATH . $filename;
-
-        // 确保目录存在
-        $dir = dirname($filepath);
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
-
-        // 移动文件
-        if (move_uploaded_file($file['tmp_name'], $filepath)) {
-            $this->jsonSuccess(['path' => $filename], '上传成功');
-        } else {
-            $this->jsonError('文件保存失败');
-        }
-    }
-
-    /**
-     * 渲染视图
-     */
     protected function render($template, $data = [])
     {
         echo $this->view->render($template, $data);

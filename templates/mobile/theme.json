@@ -1,8 +1,8 @@
 {
     "name": "HuSNS Mobile",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "author": "HYR",
-    "description": "HuSNS移动端主题 - 简洁高效的移动端界面",
+    "description": "HuSNS移动端主题 - 基于API的现代化移动端界面",
     "homepage": "https://huyourui.com",
     "type": "mobile"
 }
