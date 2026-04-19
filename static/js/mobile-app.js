@@ -16,9 +16,13 @@
         
         init: function(baseUrl) {
             this.baseUrl = baseUrl;
-            this.checkLogin();
             this.bindEvents();
-            this.initPage();
+            var self = this;
+            this.checkLogin().then(function() {
+                self.initPage();
+            }).catch(function() {
+                self.initPage();
+            });
         },
 
         api: function(action, data, method) {
@@ -66,7 +70,7 @@
 
         checkLogin: function() {
             var self = this;
-            this.api('userInfo').then(function(res) {
+            return this.api('userInfo').then(function(res) {
                 if (res.code === 0 && res.data.logged_in) {
                     self.currentUser = res.data.user;
                     self.updateUserUI(res.data);
@@ -77,6 +81,8 @@
                 }
             }).catch(function(err) {
                 console.error('Check login error:', err);
+                self.currentUser = null;
+                self.updateUserUI(null);
             });
         },
 
@@ -262,28 +268,38 @@
                 self.loading = false;
 
                 if (res.code === 0) {
-                    var posts = res.data.items;
+                    var posts = res.data.items || [];
                     var container = document.getElementById('postList');
+                    
+                    if (!container) {
+                        console.error('postList container not found');
+                        return;
+                    }
                     
                     if (!append) {
                         container.innerHTML = '';
                         self.currentPage = 1;
                     }
 
-                    posts.forEach(function(post) {
-                        container.insertAdjacentHTML('beforeend', self.renderPostItem(post));
-                    });
+                    if (posts.length === 0 && !append) {
+                        container.innerHTML = '<div class="empty-state">暂无内容</div>';
+                    } else {
+                        posts.forEach(function(post) {
+                            container.insertAdjacentHTML('beforeend', self.renderPostItem(post));
+                        });
+                    }
 
-                    self.hasMore = res.data.pagination.has_more;
+                    self.hasMore = res.data.pagination ? res.data.pagination.has_more : false;
                     self.currentPage = page;
                     self.updateLoadMoreButton();
                 } else {
-                    self.showToast(res.message, 'error');
+                    self.showToast(res.message || '加载失败', 'error');
                 }
             }).catch(function(err) {
                 self.hideLoading();
                 self.loading = false;
-                self.showToast('加载失败: ' + err.message, 'error');
+                console.error('loadPosts error:', err);
+                self.showToast('加载失败: ' + (err.message || '未知错误'), 'error');
             });
         },
 
