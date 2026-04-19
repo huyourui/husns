@@ -127,6 +127,28 @@ class MobileApiController extends Controller
         
         $post['avatar'] = Helper::avatar($post['avatar'] ?? null, $post['username']);
         
+        // 处理转发微博的原文
+        $post['is_repost'] = false;
+        if (!empty($post['repost_id'])) {
+            if (!empty($post['original_post']) && is_array($post['original_post']) && !isset($post['original_post']['deleted'])) {
+                $post['is_repost'] = true;
+                $post['original_post'] = $this->formatOriginalPost($post['original_post']);
+            }
+        }
+        
+        return $post;
+    }
+    
+    private function formatOriginalPost($post)
+    {
+        $post['images'] = is_array($post['images']) ? $post['images'] : 
+            ($post['images'] ? json_decode($post['images'], true) : []);
+        $post['videos'] = is_array($post['videos']) ? $post['videos'] : 
+            ($post['videos'] ? json_decode($post['videos'], true) : []);
+        $post['time_ago'] = Helper::formatTime($post['created_at']);
+        $post['content'] = Helper::parseContent($post['content']);
+        $post['avatar'] = Helper::avatar($post['avatar'] ?? null, $post['username']);
+        
         return $post;
     }
 
@@ -196,12 +218,12 @@ class MobileApiController extends Controller
             $this->error('注册功能已关闭');
         }
 
-        $username = trim($this->input('username'));
-        $password = $this->input('password');
-        $confirmPassword = $this->input('confirm_password');
-        $email = trim($this->input('email'));
-        $emailCode = trim($this->input('email_code'));
-        $inviteCode = trim($this->input('invite_code'));
+        $username = trim($this->input('username') ?? '');
+        $password = $this->input('password') ?? '';
+        $confirmPassword = $this->input('confirm_password') ?? '';
+        $email = trim($this->input('email') ?? '');
+        $emailCode = trim($this->input('email_code') ?? '');
+        $inviteCode = trim($this->input('invite_code') ?? '');
 
         $errors = [];
 
@@ -338,15 +360,33 @@ class MobileApiController extends Controller
     {
         $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
         
+        // 调试日志
+        error_log('posts API called, userId: ' . ($userId ?: 'null'));
+        error_log('GET params: ' . json_encode($_GET));
+        
         if (!$userId && !Setting::isGuestAccessAllowed()) {
+            error_log('posts API: guest access not allowed, returning 401');
             $this->error('请先登录', 401);
         }
 
         $page = (int)$this->input('page', 1);
         $tab = $this->input('tab', 'all');
         $pageSize = 15;
+        
+        error_log('posts API: page=' . $page . ', tab=' . $tab);
 
         $posts = $this->postModel->getTimeline($page, $pageSize, $userId, $tab);
+        error_log('posts API: fetched ' . count($posts) . ' posts');
+        
+        // 调试：检查第一个转发微博的数据
+        foreach ($posts as $i => $p) {
+            if (!empty($p['repost_id'])) {
+                error_log('posts API: post['.$i.'] repost_id=' . $p['repost_id'] . ', has original_post=' . (isset($p['original_post']) ? 'yes' : 'no'));
+                if (isset($p['original_post'])) {
+                    error_log('posts API: original_post keys=' . implode(',', array_keys($p['original_post'])));
+                }
+            }
+        }
         
         $formattedPosts = [];
         foreach ($posts as $post) {
@@ -354,6 +394,8 @@ class MobileApiController extends Controller
         }
 
         $total = $this->postModel->getTimelineCount($userId, $tab);
+        error_log('posts API: total count=' . $total);
+        
         $this->paginate($formattedPosts, $total, $page, $pageSize);
     }
 

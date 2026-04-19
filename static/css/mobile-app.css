@@ -302,6 +302,188 @@ html, body {
     color: #faad14;
 }
 
+/* 转发内容样式 */
+.repost-content {
+    background: #f5f5f5;
+    border-left: 3px solid #1890ff;
+    border-radius: 4px;
+    padding: 12px;
+    margin-top: 10px;
+}
+
+.dark-mode .repost-content {
+    background: #2a2a2a;
+    border-left-color: #1890ff;
+}
+
+.repost-header {
+    margin-bottom: 8px;
+}
+
+.repost-username {
+    color: #1890ff;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.repost-text {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.dark-mode .repost-text {
+    color: #aaa;
+}
+
+/* 转发页面样式 */
+.original-post-preview {
+    background: #fff;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.dark-mode .original-post-preview {
+    background: #2a2a2a;
+}
+
+.original-post {
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 12px;
+    background: #fafafa;
+}
+
+.dark-mode .original-post {
+    border-color: #333;
+    background: #1a1a1a;
+}
+
+.original-post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.original-post-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 10px;
+}
+
+.original-post-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.original-post-info {
+    flex: 1;
+}
+
+.original-post-username {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    display: block;
+}
+
+.dark-mode .original-post-username {
+    color: #fff;
+}
+
+.original-post-time {
+    font-size: 12px;
+    color: #999;
+}
+
+.dark-mode .original-post-time {
+    color: #666;
+}
+
+.original-post-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.dark-mode .original-post-content {
+    color: #e0e0e0;
+}
+
+.original-post-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.original-post-images img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.repost-form-container {
+    background: #fff;
+    padding: 12px;
+}
+
+.dark-mode .repost-form-container {
+    background: #2a2a2a;
+}
+
+.repost-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.repost-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 100px;
+    margin-bottom: 12px;
+}
+
+.dark-mode .repost-textarea {
+    background: #1a1a1a;
+    border-color: #333;
+    color: #e0e0e0;
+}
+
+.repost-textarea:focus {
+    outline: none;
+    border-color: #1890ff;
+}
+
+.repost-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.repost-actions .submit-btn {
+    padding: 10px 24px;
+    background: #1890ff;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.repost-actions .submit-btn:active {
+    background: #096dd9;
+}
+
 .comment-section {
     background: #fff;
     margin-top: 10px;
@@ -656,6 +838,78 @@ html, body {
     color: #999;
 }
 
+/* 个人中心菜单 */
+.profile-menu {
+    background: #fff;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.dark-mode .profile-menu {
+    background: #2a2a2a;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    text-decoration: none;
+    color: #333;
+}
+
+.dark-mode .menu-item {
+    border-bottom-color: #333;
+    color: #e0e0e0;
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+.menu-icon {
+    font-size: 20px;
+    margin-right: 12px;
+    width: 24px;
+    text-align: center;
+}
+
+.menu-text {
+    flex: 1;
+    font-size: 14px;
+}
+
+.menu-arrow {
+    font-size: 18px;
+    color: #ccc;
+}
+
+.dark-mode .menu-arrow {
+    color: #666;
+}
+
+/* 退出登录按钮 */
+.logout-section {
+    padding: 0 15px 15px;
+}
+
+.logout-btn {
+    width: 100%;
+    padding: 12px;
+    background: #ff4d4f;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.logout-btn:active {
+    background: #ff7875;
+}
+
 .user-actions {
     background: #fff;
     border-radius: 8px;
@@ -932,6 +1186,8 @@ html, body {
     justify-content: center;
     font-size: 18px;
     font-weight: 500;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
 .detail-page {

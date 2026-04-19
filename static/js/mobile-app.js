@@ -19,12 +19,18 @@
             this.baseUrl = baseUrl;
             this.bindEvents();
             var self = this;
-            // 直接调用initPage，不等待checkLogin
-            console.log('Calling initPage...');
+            
+            // 立即初始化页面，不等待登录检查
+            console.log('Calling initPage immediately...');
             this.initPage();
-            // 异步检查登录状态
+            
+            // 异步检查登录状态，更新UI
             console.log('Calling checkLogin...');
-            this.checkLogin();
+            this.checkLogin().then(function() {
+                console.log('checkLogin completed');
+            }).catch(function(err) {
+                console.log('checkLogin failed:', err);
+            });
         },
 
         api: function(action, data, method) {
@@ -239,9 +245,16 @@
             console.log('initPage called, pageType:', pageType);
             console.log('document.body.dataset:', document.body.dataset);
             
+            // 同步currentTab与页面上active的tab
+            var activeTab = document.querySelector('.tab-item.active');
+            if (activeTab && activeTab.dataset.tab) {
+                this.currentTab = activeTab.dataset.tab;
+                console.log('Synced currentTab from DOM:', this.currentTab);
+            }
+            
             switch (pageType) {
                 case 'home':
-                    console.log('Calling loadPosts for home page...');
+                    console.log('Calling loadPosts for home page, currentTab:', this.currentTab);
                     this.loadPosts();
                     break;
                 case 'hot':
@@ -270,11 +283,15 @@
 
         loadPosts: function(append) {
             var self = this;
-            console.log('loadPosts called, loading:', this.loading);
-            if (this.loading) return;
+            console.log('loadPosts called, loading:', this.loading, 'currentTab:', this.currentTab);
+            if (this.loading) {
+                console.log('loadPosts: already loading, returning');
+                return;
+            }
             
             this.loading = true;
             this.showLoading();
+            console.log('loadPosts: starting to load data');
 
             var page = append ? this.currentPage + 1 : 1;
             console.log('Loading posts, page:', page, 'tab:', this.currentTab);
@@ -993,16 +1010,17 @@
 
             html += '</div>' +
                 '<div class="post-actions">' +
-                '<button class="action-btn like-btn ' + (post.is_liked ? 'liked' : '') + '" data-post-id="' + post.id + '">' +
-                '<span class="action-icon">❤️</span>' +
-                '<span class="action-count">' + post.likes + '</span>' +
+                '<button class="action-btn repost-btn" data-post-id="' + post.id + '">' +
+                '<span class="action-icon">↗️</span>' +
+                '<span class="action-count">' + (post.reposts || 0) + '</span>' +
                 '</button>' +
                 '<a href="' + this.baseUrl + '/?r=mobile/detail&id=' + post.id + '" class="action-btn comment-btn">' +
                 '<span class="action-icon">💬</span>' +
                 '<span class="action-count">' + post.comments + '</span>' +
                 '</a>' +
-                '<button class="action-btn favorite-btn ' + (post.is_favorited ? 'favorited' : '') + '" data-post-id="' + post.id + '">' +
-                '<span class="action-icon">⭐</span>' +
+                '<button class="action-btn like-btn ' + (post.is_liked ? 'liked' : '') + '" data-post-id="' + post.id + '">' +
+                '<span class="action-icon">❤️</span>' +
+                '<span class="action-count">' + post.likes + '</span>' +
                 '</button>' +
                 '</div>' +
                 '</div>';
@@ -1037,12 +1055,17 @@
 
             html += '</div>' +
                 '<div class="post-actions">' +
+                '<button class="action-btn repost-btn" data-post-id="' + post.id + '">' +
+                '<span class="action-icon">↗️</span>' +
+                '<span class="action-count">' + (post.reposts || 0) + '</span>' +
+                '</button>' +
+                '<button class="action-btn comment-btn">' +
+                '<span class="action-icon">💬</span>' +
+                '<span class="action-count">' + post.comments + '</span>' +
+                '</button>' +
                 '<button class="action-btn like-btn ' + (post.is_liked ? 'liked' : '') + '" data-post-id="' + post.id + '">' +
                 '<span class="action-icon">❤️</span>' +
                 '<span class="action-count">' + post.likes + '</span>' +
-                '</button>' +
-                '<button class="action-btn favorite-btn ' + (post.is_favorited ? 'favorited' : '') + '" data-post-id="' + post.id + '">' +
-                '<span class="action-icon">⭐</span>' +
                 '</button>' +
                 '</div>' +
                 '</div>';

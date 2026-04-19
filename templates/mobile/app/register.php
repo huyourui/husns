@@ -12,6 +12,10 @@ $this->setLayout('app');
             <input type="text" name="username" placeholder="请输入用户名" required>
         </div>
         <div class="form-group">
+            <label>邮箱</label>
+            <input type="email" name="email" placeholder="请输入邮箱" required>
+        </div>
+        <div class="form-group">
             <label>密码</label>
             <input type="password" name="password" placeholder="请输入密码" required>
         </div>
@@ -20,10 +24,6 @@ $this->setLayout('app');
             <input type="password" name="confirm_password" placeholder="请再次输入密码" required>
         </div>
         <?php if ($emailVerifyEnabled): ?>
-        <div class="form-group">
-            <label>邮箱</label>
-            <input type="email" name="email" placeholder="请输入邮箱" required>
-        </div>
         <div class="form-group">
             <label>验证码</label>
             <input type="text" name="email_code" placeholder="请输入邮箱验证码" required>

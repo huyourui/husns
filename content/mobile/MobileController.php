@@ -95,8 +95,17 @@ class MobileController extends Controller
 
     public function logout()
     {
+        // 触发退出登录钩子
+        Hook::trigger('user_logout', ['user_id' => $_SESSION['user_id'] ?? null]);
+        
+        // 清除记住登录状态的cookie
+        setcookie('remember_token', '', time() - 3600, '/');
+        
+        // 销毁session
         session_destroy();
-        $this->redirect(Helper::url('mobile/login'));
+        
+        // 跳转到移动端首页
+        $this->redirect(Helper::url('mobile'));
     }
 
     public function publish()
@@ -205,6 +214,65 @@ class MobileController extends Controller
             'keyword' => $keyword,
             'showBack' => true,
             'headerTitle' => '#' . $keyword . '#'
+        ]);
+    }
+
+    public function repost()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            $this->redirect(Helper::url('mobile/login'));
+            return;
+        }
+
+        $id = (int)Helper::get('id');
+        if (!$id) {
+            $this->redirect(Helper::url('mobile'));
+            return;
+        }
+
+        $this->render('app/repost', [
+            'id' => $id,
+            'showBack' => true,
+            'headerTitle' => '转发微博'
+        ]);
+    }
+
+    public function favorites()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            $this->redirect(Helper::url('mobile/login'));
+            return;
+        }
+
+        $this->render('app/favorites', [
+            'showBack' => true,
+            'headerTitle' => '我的收藏'
+        ]);
+    }
+
+    public function follows()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            $this->redirect(Helper::url('mobile/login'));
+            return;
+        }
+
+        $this->render('app/follows', [
+            'showBack' => true,
+            'headerTitle' => '我的关注'
+        ]);
+    }
+
+    public function fans()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            $this->redirect(Helper::url('mobile/login'));
+            return;
+        }
+
+        $this->render('app/fans', [
+            'showBack' => true,
+            'headerTitle' => '我的粉丝'
         ]);
     }
 

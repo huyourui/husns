@@ -17,6 +17,11 @@ class PostModel extends Model
         $offset = ($page - 1) * $pageSize;
         $pinnedCondition = $excludePinned ? 'AND (p.is_pinned = 0 OR p.is_pinned IS NULL)' : '';
         
+        // 确保tab参数有效
+        if (empty($tab)) {
+            $tab = 'all';
+        }
+        
         if ($tab === 'following' && $userId) {
             $sql = "SELECT p.*, u.username, u.avatar 
                     FROM __PREFIX__posts p 
@@ -590,7 +595,8 @@ class PostModel extends Model
         $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
         $hideTagAdminOnly = Setting::isHideTagAdminOnly();
         
-        foreach ($posts as &$post) {
+        $formattedPosts = [];
+        foreach ($posts as $post) {
             $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
             $post['time_ago'] = Helper::formatTime($post['created_at']);
             $post['content'] = ltrim($post['content']);
@@ -616,9 +622,11 @@ class PostModel extends Model
             if (!empty($post['repost_id'])) {
                 $post['original_post'] = $this->getOriginalPost($post['repost_id'], $userId);
             }
+            
+            $formattedPosts[] = $post;
         }
         
-        return $posts;
+        return $formattedPosts;
     }
     
     private function isUserAdmin($userId)
