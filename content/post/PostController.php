@@ -202,6 +202,18 @@ class PostController extends Controller
         if ($postId) {
             Point::change($_SESSION['user_id'], 'publish_post', 'post', $postId);
             
+            try {
+                $this->sendMentionNotifications($content, $postId, $_SESSION['user_id'], null);
+            } catch (Exception $e) {
+            }
+            
+            // 如果是AJAX请求（移动端），返回简化JSON
+            if (Helper::isAjax()) {
+                Helper::jsonSuccess(['id' => $postId], '发布成功');
+                return;
+            }
+            
+            // 电脑端返回完整HTML
             $post = $this->postModel->getPost($postId, $_SESSION['user_id']);
             $user = $this->userModel->find($_SESSION['user_id']);
             
@@ -272,21 +284,16 @@ class PostController extends Controller
                 $html .= '</div>';
             }
             
-            $post = [
+            $postData = [
                 'id' => $postId,
                 'user_id' => $_SESSION['user_id'],
                 'reposts' => 0,
                 'comments' => 0,
                 'likes' => 0
             ];
-            $html .= PostActionHelper::render($post);
+            $html .= PostActionHelper::render($postData);
             $html .= CommentHelper::renderCommentBox($postId);
             $html .= '</div></div>';
-            
-            try {
-                $this->sendMentionNotifications($content, $postId, $_SESSION['user_id'], null);
-            } catch (Exception $e) {
-            }
             
             Helper::jsonSuccess(['id' => $postId, 'html' => $html], '发布成功');
         }
