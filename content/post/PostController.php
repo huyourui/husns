@@ -207,13 +207,11 @@ class PostController extends Controller
             } catch (Exception $e) {
             }
             
-            // 如果是AJAX请求（移动端），返回简化JSON
-            if (Helper::isAjax()) {
+            if (Helper::isMobile()) {
                 Helper::jsonSuccess(['id' => $postId], '发布成功');
                 return;
             }
             
-            // 电脑端返回完整HTML
             $post = $this->postModel->getPost($postId, $_SESSION['user_id']);
             $user = $this->userModel->find($_SESSION['user_id']);
             
