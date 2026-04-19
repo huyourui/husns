@@ -28,6 +28,7 @@ class App
         'LinkController' => 'content/link/LinkController.php',
         'DownloadController' => 'content/download/DownloadController.php',
         'TopicController' => 'content/topic/TopicController.php',
+        'MobileController' => 'content/mobile/MobileController.php',
     ];
     
     /**
