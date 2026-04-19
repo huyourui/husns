@@ -170,8 +170,15 @@ class PostController extends Controller
         $content = Security::xssClean($content);
         
         $images = [];
+        // 处理文件上传（电脑端）
         if (!empty($_FILES['images']) && is_array($_FILES['images']['name']) && count($_FILES['images']['name']) > 0) {
             $images = $this->uploadImages();
+        }
+        // 处理已上传的图片路径（移动端）
+        elseif (!empty($_POST['images']) && is_array($_POST['images'])) {
+            $images = array_filter($_POST['images'], function($path) {
+                return !empty($path) && preg_match('/^[a-zA-Z0-9_\-\/\.]+$/', $path);
+            });
         }
 
         $attachments = [];

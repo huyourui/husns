@@ -652,6 +652,76 @@ class MobileController extends Controller
     }
 
     /**
+     * 上传图片（用于发布微博时的图片上传）
+     */
+    public function uploadImage()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            $this->jsonError('请先登录', 401);
+            return;
+        }
+
+        if (empty($_FILES['image'])) {
+            $this->jsonError('没有上传文件');
+            return;
+        }
+
+        $file = $_FILES['image'];
+
+        // 检查上传错误
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            $errorMsg = '上传失败';
+            switch ($file['error']) {
+                case UPLOAD_ERR_INI_SIZE:
+                case UPLOAD_ERR_FORM_SIZE:
+                    $errorMsg = '文件大小超过限制';
+                    break;
+                case UPLOAD_ERR_PARTIAL:
+                    $errorMsg = '文件上传不完整';
+                    break;
+            }
+            $this->jsonError($errorMsg);
+            return;
+        }
+
+        // 验证文件类型
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+
+        if (!in_array($mimeType, $allowedTypes)) {
+            $this->jsonError('只允许上传图片文件');
+            return;
+        }
+
+        // 验证文件大小
+        $maxSize = UPLOAD_MAX_SIZE;
+        if ($file['size'] > $maxSize) {
+            $this->jsonError('文件大小超过' . ($maxSize / 1024 / 1024) . 'MB限制');
+            return;
+        }
+
+        // 生成文件名
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $filename = date('Ymd') . '/' . uniqid() . '.' . $ext;
+        $filepath = UPLOAD_PATH . $filename;
+
+        // 确保目录存在
+        $dir = dirname($filepath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        // 移动文件
+        if (move_uploaded_file($file['tmp_name'], $filepath)) {
+            $this->jsonSuccess(['path' => $filename], '上传成功');
+        } else {
+            $this->jsonError('文件保存失败');
+        }
+    }
+
+    /**
      * 渲染视图
      */
     protected function render($template, $data = [])

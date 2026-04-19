@@ -105,19 +105,26 @@
         },
 
         publishPost: function(form) {
+            // 检查是否有图片正在上传中
+            var uploadingItems = document.querySelectorAll('.m-publish-image-item[data-uploading="true"]');
+            if (uploadingItems.length > 0) {
+                M.showToast('图片正在上传中，请稍候', 'error');
+                return;
+            }
+
             var formData = new FormData(form);
-            var images = document.querySelectorAll('.m-publish-image-item img');
+            var images = document.querySelectorAll('.m-publish-image-item');
             var imageFiles = [];
 
-            images.forEach(function(img) {
-                if (img.dataset.path) {
-                    imageFiles.push(img.dataset.path);
+            images.forEach(function(item) {
+                if (item.dataset.path) {
+                    imageFiles.push(item.dataset.path);
                 }
             });
 
             formData.delete('images');
             imageFiles.forEach(function(path, index) {
-                formData.append('images[' + index + '][path]', path);
+                formData.append('images[' + index + ']', path);
             });
 
             var submitBtn = form.querySelector('.m-publish-submit');
@@ -126,6 +133,9 @@
 
             fetch(BASE_URL + '/?r=post/publish', {
                 method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: formData
             })
             .then(function(res) { return res.json(); })
@@ -141,8 +151,9 @@
                     submitBtn.textContent = '发布';
                 }
             })
-            .catch(function() {
-                M.showToast('网络错误', 'error');
+            .catch(function(err) {
+                console.error('发布失败:', err);
+                M.showToast('网络错误，请检查网络连接', 'error');
                 submitBtn.disabled = false;
                 submitBtn.textContent = '发布';
             });
@@ -251,17 +262,53 @@
             if (!container) return;
 
             var maxCount = 9 - document.querySelectorAll('.m-publish-image-item').length;
+            var uploadCount = 0;
 
             for (var i = 0; i < Math.min(files.length, maxCount); i++) {
                 (function(file) {
+                    // 先显示预览
                     var reader = new FileReader();
                     reader.onload = function(e) {
-                        var html = '<div class="m-publish-image-item">' +
+                        var tempId = 'upload_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                        var html = '<div class="m-publish-image-item" id="' + tempId + '" data-uploading="true">' +
                             '<img src="' + e.target.result + '" alt="">' +
+                            '<div class="m-upload-progress">上传中...</div>' +
                             '<button type="button" class="m-publish-image-remove">×</button>' +
                             '</div>';
                         container.insertAdjacentHTML('beforeend', html);
                         M.updateImageCount();
+
+                        // 上传图片到服务器
+                        var formData = new FormData();
+                        formData.append('image', file);
+                        formData.append('csrf_token', CSRF_TOKEN);
+
+                        fetch(BASE_URL + '/?r=mobile/uploadImage', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(function(res) { return res.json(); })
+                        .then(function(data) {
+                            var item = document.getElementById(tempId);
+                            if (data.code === 0 && data.data && data.data.path) {
+                                if (item) {
+                                    item.dataset.path = data.data.path;
+                                    item.dataset.uploading = 'false';
+                                    var progressEl = item.querySelector('.m-upload-progress');
+                                    if (progressEl) progressEl.remove();
+                                }
+                            } else {
+                                M.showToast(data.msg || '图片上传失败', 'error');
+                                if (item) item.remove();
+                                M.updateImageCount();
+                            }
+                        })
+                        .catch(function() {
+                            M.showToast('图片上传失败', 'error');
+                            var item = document.getElementById(tempId);
+                            if (item) item.remove();
+                            M.updateImageCount();
+                        });
                     };
                     reader.readAsDataURL(file);
                 })(files[i]);
