@@ -16,6 +16,12 @@ class Database
 
     private function __construct()
     {
+        // 检查数据库配置常量是否已定义
+        if (!defined('DB_PREFIX') || !defined('DB_HOST') || !defined('DB_PORT') || 
+            !defined('DB_NAME') || !defined('DB_USER') || !defined('DB_PASS') || !defined('DB_CHARSET')) {
+            throw new Exception('数据库配置未定义，请先完成安装或检查 config.php 文件');
+        }
+        
         $this->prefix = DB_PREFIX;
         
         $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;

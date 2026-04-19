@@ -44,6 +44,18 @@ class View
             return self::$currentTheme;
         }
         
+        // 安装模式下或数据库未配置时，直接返回默认主题
+        if (defined('INSTALL_MODE') && INSTALL_MODE) {
+            self::$currentTheme = 'default';
+            return 'default';
+        }
+        
+        // 检查数据库配置是否可用
+        if (!defined('DB_PREFIX')) {
+            self::$currentTheme = 'default';
+            return 'default';
+        }
+        
         try {
             $db = Database::getInstance();
             $result = $db->fetch(
