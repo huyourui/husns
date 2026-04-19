@@ -492,47 +492,88 @@ class Helper
             $userUrl = self::url('user/profile?username=$1');
         }
 
-        $tokens = [];
-        $tokenIndex = 0;
+        // 将内容分割成数组，特殊内容保持原样，普通文本进行转义
+        $parts = [];
+        $offset = 0;
+        $contentLength = mb_strlen($content, 'UTF-8');
 
-        $urlPattern = '/(https?:\/\/[^\s<]+)/i';
-        $content = preg_replace_callback($urlPattern, function($matches) use (&$tokens, &$tokenIndex) {
-            $url = $matches[1];
-            $tokenKey = "\x00T" . $tokenIndex . "\x00";
-            $tokens[$tokenKey] = '<a href="' . $url . '" target="_blank" rel="noopener">' . $url . '</a>';
-            $tokenIndex++;
-            return $tokenKey;
-        }, $content);
+        // 定义所有需要匹配的模式
+        $patterns = [
+            'url' => '/https?:\/\/[^\s<]+/i',
+            'topic' => '/#([^#\s]+)#/',
+            'user' => '/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;:：])/u'
+        ];
 
-        $topicPattern = '/#([^#\s]+)#/';
-        $content = preg_replace_callback($topicPattern, function($matches) use (&$tokens, &$tokenIndex, $topicUrl) {
-            $topicName = $matches[1];
-            $tokenKey = "\x00T" . $tokenIndex . "\x00";
-            $tokens[$tokenKey] = '<a href="' . str_replace('$1', urlencode($topicName), $topicUrl) . '">#' . Security::escape($topicName) . '#</a>';
-            $tokenIndex++;
-            return $tokenKey;
-        }, $content);
-
-        $userPattern = '/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;:：])/u';
-        $content = preg_replace_callback($userPattern, function($matches) use (&$tokens, &$tokenIndex, $userUrl) {
-            $username = $matches[1];
-            $tokenKey = "\x00T" . $tokenIndex . "\x00";
-            $tokens[$tokenKey] = '<a href="' . str_replace('$1', urlencode($username), $userUrl) . '">@' . Security::escape($username) . '</a>';
-            $tokenIndex++;
-            return $tokenKey;
-        }, $content);
-
-        $content = Security::escape($content);
-
-        foreach ($tokens as $tokenKey => $htmlTag) {
-            $escapedToken = str_replace(["\x00"], ['&#0;'], $tokenKey);
-            $escapedToken = htmlspecialchars($escapedToken, ENT_QUOTES, 'UTF-8');
-            $content = str_replace($escapedToken, $htmlTag, $content);
+        // 找到所有匹配的位置
+        $allMatches = [];
+        foreach ($patterns as $type => $pattern) {
+            if (preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE)) {
+                foreach ($matches[0] as $idx => $match) {
+                    $allMatches[] = [
+                        'type' => $type,
+                        'text' => $match[0],
+                        'pos' => $match[1],
+                        'length' => strlen($match[0]),
+                        'capture' => isset($matches[1][$idx]) ? $matches[1][$idx][0] : null
+                    ];
+                }
+            }
         }
 
-        $content = self::parseEmojis($content);
+        // 按位置排序
+        usort($allMatches, function($a, $b) {
+            return $a['pos'] - $b['pos'];
+        });
 
-        return $content;
+        // 去重（处理重叠的匹配，优先保留前面的）
+        $filteredMatches = [];
+        $lastEnd = 0;
+        foreach ($allMatches as $match) {
+            if ($match['pos'] >= $lastEnd) {
+                $filteredMatches[] = $match;
+                $lastEnd = $match['pos'] + $match['length'];
+            }
+        }
+
+        // 构建结果
+        $result = '';
+        $currentPos = 0;
+
+        foreach ($filteredMatches as $match) {
+            // 添加前面的普通文本（需要转义）
+            if ($match['pos'] > $currentPos) {
+                $normalText = substr($content, $currentPos, $match['pos'] - $currentPos);
+                $result .= Security::escape($normalText);
+            }
+
+            // 添加特殊内容的HTML链接（不转义）
+            switch ($match['type']) {
+                case 'url':
+                    $url = Security::escape($match['text']);
+                    $result .= '<a href="' . $url . '" target="_blank" rel="noopener">' . $url . '</a>';
+                    break;
+                case 'topic':
+                    $topicName = $match['capture'];
+                    $result .= '<a href="' . str_replace('$1', urlencode($topicName), $topicUrl) . '">#' . Security::escape($topicName) . '#</a>';
+                    break;
+                case 'user':
+                    $username = $match['capture'];
+                    $result .= '<a href="' . str_replace('$1', urlencode($username), $userUrl) . '">@' . Security::escape($username) . '</a>';
+                    break;
+            }
+
+            $currentPos = $match['pos'] + $match['length'];
+        }
+
+        // 添加剩余普通文本
+        if ($currentPos < strlen($content)) {
+            $result .= Security::escape(substr($content, $currentPos));
+        }
+
+        // 解析表情
+        $result = self::parseEmojis($result);
+
+        return $result;
     }
     
     public static function getEmojiList()
