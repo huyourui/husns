@@ -24,7 +24,7 @@ $hideTagAdminOnly = Setting::isHideTagAdminOnly();
 $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'];
 $showHideBtn = !$hideTagAdminOnly || $isAdmin;
 if (empty($publishPlaceholder)) {
-    $publishPlaceholder = '有什么新鲜事想分享给大家？';
+    $publishPlaceholder = $this->t('post.placeholder');
 }
 
 $phpPostMaxSize = ini_get('post_max_size');
@@ -66,7 +66,7 @@ $effectiveMaxVideoSize = min($maxVideoSize, $phpMaxSize);
             <div class="char-counter">
                 <span id="postCharCount">0</span>/<span id="postMaxChars"><?php echo $maxPostLength; ?></span>
             </div>
-            <button type="submit" class="btn btn-primary">发布</button>
+            <button type="submit" class="btn btn-primary"><?php echo $this->t('common.publish'); ?></button>
         </div>
         <div id="previewImages" class="preview-images"></div>
         <div id="videoList" class="video-list" style="display:none;"></div>
@@ -74,8 +74,8 @@ $effectiveMaxVideoSize = min($maxVideoSize, $phpMaxSize);
         
         <div id="emojiPanel" class="emoji-panel" style="display:none;">
             <div class="emoji-panel-header">
-                <span class="emoji-tab active" data-category="default">默认</span>
-                <span class="emoji-tab" data-category="hot">热门</span>
+                <span class="emoji-tab active" data-category="default"><?php echo $this->t('emoji.default'); ?></span>
+                <span class="emoji-tab" data-category="hot"><?php echo $this->t('emoji.hot'); ?></span>
                 <span class="emoji-tab" data-category="emoji">Emoji</span>
             </div>
             <div class="emoji-panel-content" id="emojiContent"></div>

@@ -54,7 +54,11 @@
     "dark_mode": "Dark Mode",
     "light_mode": "Light Mode",
     "link": "Links",
-    "mobile_version": "Mobile"
+    "mobile_version": "Mobile",
+    "action": "Action",
+    "all_posts": "All Posts",
+    "engagement": "Engagement",
+    "points": "Points"
   },
   "nav": {
     "home": "Home",
@@ -99,7 +103,18 @@
     "days_ago": "{n} days ago",
     "pinned": "Pinned",
     "featured": "Featured",
-    "also_comment": "Also comment"
+    "also_comment": "Also comment",
+    "attachments": "Attachments",
+    "no_following_content": "You haven't followed anyone yet, or the users you followed haven't posted anything",
+    "view_all_posts": "View all posts",
+    "discover_more": "Discover more",
+    "empty_timeline": "No posts yet, be the first to post!",
+    "original_deleted": "Original post deleted",
+    "video_not_supported": "Your browser does not support video playback",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "feature": "Feature",
+    "unfeature": "Unfeature"
   },
   "user": {
     "username": "Username",
@@ -139,7 +154,9 @@
     "update_success": "Profile updated",
     "update_failed": "Failed to update profile",
     "password_changed": "Password changed successfully",
-    "password_wrong": "Incorrect current password"
+    "password_wrong": "Incorrect current password",
+    "no_account": "Don't have an account?",
+    "register_now": "Register now"
   },
   "notification": {
     "title": "Notifications",
@@ -255,5 +272,9 @@
     "installing": "Installing...",
     "install_success": "Installation successful",
     "install_tip": "Please follow the wizard to complete installation"
+  },
+  "emoji": {
+    "default": "Default",
+    "hot": "Hot"
   }
 }

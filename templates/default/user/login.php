@@ -11,20 +11,20 @@
 ?>
 <div class="page-login">
     <div class="auth-box">
-        <h2>登录</h2>
+        <h2><?php echo $this->t('user.login_title'); ?></h2>
         <form method="post" action="<?php echo $this->url('user/login'); ?>">
             <?php echo $this->csrf(); ?>
             <div class="form-group">
-                <input type="text" name="username" placeholder="用户名" required>
+                <input type="text" name="username" placeholder="<?php echo $this->t('user.username'); ?>" required>
             </div>
             <div class="form-group">
-                <input type="password" name="password" placeholder="密码" required>
+                <input type="password" name="password" placeholder="<?php echo $this->t('user.password'); ?>" required>
             </div>
             <div class="form-group remember-me">
-                <label><input type="checkbox" name="remember" value="1"> 保持登录</label>
+                <label><input type="checkbox" name="remember" value="1"> <?php echo $this->t('user.remember_me'); ?></label>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">登录</button>
+            <button type="submit" class="btn btn-primary btn-block"><?php echo $this->t('common.login'); ?></button>
         </form>
-        <p class="auth-link">还没有账号？<a href="<?php echo $this->url('user/register'); ?>">立即注册</a></p>
+        <p class="auth-link"><?php echo $this->t('user.no_account'); ?> <a href="<?php echo $this->url('user/register'); ?>"><?php echo $this->t('user.register_now'); ?></a></p>
     </div>
 </div>

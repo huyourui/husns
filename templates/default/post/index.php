@@ -23,11 +23,11 @@
                 <div class="user-card-stats">
                     <div class="stat-item">
                         <div class="stat-value"><?php echo number_format($userStats['post_count']); ?></div>
-                        <div class="stat-label">微博</div>
+                        <div class="stat-label"><?php echo $this->t('common.posts'); ?></div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value"><?php echo number_format($userStats['total_engagement']); ?></div>
-                        <div class="stat-label">转评赞</div>
+                        <div class="stat-label"><?php echo $this->t('common.engagement'); ?></div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value"><?php echo number_format($userStats['points']); ?></div>
@@ -38,7 +38,7 @@
             
             <?php if (!empty($hotTopics) && Setting::isHotTopicsEnabled()): ?>
             <div class="hot-topics-card">
-                <div class="hot-topics-title">🔥 热门话题</div>
+                <div class="hot-topics-title">🔥 <?php echo $this->t('common.hot_topics'); ?></div>
                 <div class="hot-topics-list">
                     <?php foreach ($hotTopics as $index => $topic): ?>
                     <a href="<?php echo $this->url('post/topic?keyword=' . urlencode($topic['name'])); ?>" class="hot-topic-item" title="<?php echo $this->escape($topic['name']); ?>">
@@ -65,8 +65,8 @@
             <?php endif; ?>
 
             <div class="timeline-tabs">
-                <a href="<?php echo $this->url('?tab=following'); ?>" class="tab-item <?php echo $tab === 'following' ? 'active' : ''; ?>">我的关注</a>
-                <a href="<?php echo $this->url('?tab=all'); ?>" class="tab-item <?php echo $tab === 'all' ? 'active' : ''; ?>">全站信息</a>
+                <a href="<?php echo $this->url('?tab=following'); ?>" class="tab-item <?php echo $tab === 'following' ? 'active' : ''; ?>"><?php echo $this->t('common.following'); ?></a>
+                <a href="<?php echo $this->url('?tab=all'); ?>" class="tab-item <?php echo $tab === 'all' ? 'active' : ''; ?>"><?php echo $this->t('common.all_posts'); ?></a>
             </div>
 
             <?php if (!empty($pinnedPost)): ?>
@@ -79,9 +79,9 @@
                 <div class="post-content">
                     <div class="post-header">
                         <a href="<?php echo $this->url('user/profile?id=' . $pinnedPost['user_id']); ?>" class="username"><?php echo $this->escape($pinnedPost['username']); ?></a>
-                        <span class="pinned-tag">置顶</span>
+                        <span class="pinned-tag"><?php echo $this->t('post.pinned'); ?></span>
                         <?php if (!empty($pinnedPost['is_featured'])): ?>
-                        <span class="featured-tag">精华</span>
+                        <span class="featured-tag"><?php echo $this->t('post.featured'); ?></span>
                         <?php endif; ?>
                         <a href="<?php echo $this->url('post/detail?id=' . $pinnedPost['id']); ?>" class="time"><?php echo Helper::formatTime($pinnedPost['created_at']); ?></a>
                     </div>
@@ -106,7 +106,7 @@
                     <?php endif; ?>
                     <?php if (!empty($pinnedPost['attachments'])): ?>
                     <div class="post-attachments">
-                        <div class="post-attachments-title">📎 附件</div>
+                        <div class="post-attachments-title">📎 <?php echo $this->t('post.attachments'); ?></div>
                         <?php foreach ($pinnedPost['attachments'] as $index => $attachment): ?>
                         <a href="<?php echo $this->url('download/attachment?id=' . $pinnedPost['id'] . '&index=' . $index); ?>" class="post-attachment-item">
                             <span class="post-attachment-icon">📄</span>
@@ -126,11 +126,11 @@
                 <?php if (empty($posts)): ?>
                 <?php if ($tab === 'following'): ?>
                 <div class="empty">
-                    <p>您还没有关注任何人，或者您关注的用户还没有发布动态</p>
-                    <p><a href="<?php echo $this->url('?tab=all'); ?>">查看全站信息</a> 发现更多精彩内容</p>
+                    <p><?php echo $this->t('post.no_following_content'); ?></p>
+                    <p><a href="<?php echo $this->url('?tab=all'); ?>"><?php echo $this->t('post.view_all_posts'); ?></a> <?php echo $this->t('post.discover_more'); ?></p>
                 </div>
                 <?php else: ?>
-                <div class="empty">暂无动态，快来发布第一条吧！</div>
+                <div class="empty"><?php echo $this->t('post.empty_timeline'); ?></div>
                 <?php endif; ?>
                 <?php else: ?>
                 <?php foreach ($posts as $post): ?>
@@ -149,7 +149,7 @@
                             <span class="featured-tag">精华</span>
                             <?php endif; ?>
                             <?php if (!empty($post['repost_id'])): ?>
-                            <span class="repost-label">转发</span>
+                            <span class="repost-label"><?php echo $this->t('post.repost'); ?></span>
                             <?php endif; ?>
                             <a href="<?php echo $this->url('post/detail?id=' . $post['id']); ?>" class="time"><?php echo $post['time_ago']; ?></a>
                         </div>
@@ -161,7 +161,7 @@
                         <?php if (!empty($post['original_post'])): ?>
                         <div class="repost-box">
                             <?php if (!empty($post['original_post']['deleted'])): ?>
-                            <div class="repost-deleted">原文已删除</div>
+                            <div class="repost-deleted"><?php echo $this->t('post.original_deleted'); ?></div>
                             <?php else: ?>
                             <div class="repost-header">
                                 <a href="<?php echo $this->url('user/profile?id=' . $post['original_post']['user_id']); ?>" class="username">@<?php echo $this->escape($post['original_post']['username']); ?></a>
@@ -209,7 +209,7 @@
                             <div class="post-video-item" onclick="playVideo(this)">
                                 <video preload="metadata" playsinline>
                                     <source src="<?php echo $this->uploadUrl($video['path']); ?>#t=3" type="video/<?php echo $video['ext']; ?>">
-                                    您的浏览器不支持视频播放
+                                    <?php echo $this->t('post.video_not_supported'); ?>
                                 </video>
                                 <div class="video-overlay">
                                     <div class="video-play-btn">▶</div>
@@ -243,7 +243,7 @@
 
             <?php if (count($posts) == $pageSize): ?>
             <div class="load-more">
-                <a href="<?php echo $this->url('?page=' . ($page + 1)); ?>" class="btn">加载更多</a>
+                <a href="<?php echo $this->url('?page=' . ($page + 1)); ?>" class="btn"><?php echo $this->t('common.load_more'); ?></a>
             </div>
             <?php endif; ?>
         </div>

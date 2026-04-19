@@ -54,7 +54,11 @@
     "dark_mode": "深色模式",
     "light_mode": "淺色模式",
     "link": "友情連結",
-    "mobile_version": "移動版"
+    "mobile_version": "移動版",
+    "action": "操作",
+    "all_posts": "全站資訊",
+    "engagement": "轉評讚",
+    "points": "積分"
   },
   "nav": {
     "home": "首頁",
@@ -99,7 +103,18 @@
     "days_ago": "{n}天前",
     "pinned": "置頂",
     "featured": "精華",
-    "also_comment": "同時評論"
+    "also_comment": "同時評論",
+    "attachments": "附件",
+    "no_following_content": "您還沒有關注任何人，或者您關注的用戶還沒有發布動態",
+    "view_all_posts": "查看全站資訊",
+    "discover_more": "發現更多精彩內容",
+    "empty_timeline": "暫無動態，快來發布第一條吧！",
+    "original_deleted": "原文已刪除",
+    "video_not_supported": "您的瀏覽器不支持視頻播放",
+    "pin": "置頂",
+    "unpin": "取消置頂",
+    "feature": "加精",
+    "unfeature": "取消加精"
   },
   "user": {
     "username": "使用者名稱",
@@ -139,7 +154,9 @@
     "update_success": "資料更新成功",
     "update_failed": "資料更新失敗",
     "password_changed": "密碼修改成功",
-    "password_wrong": "原密碼錯誤"
+    "password_wrong": "原密碼錯誤",
+    "no_account": "還沒有賬號？",
+    "register_now": "立即註冊"
   },
   "notification": {
     "title": "消息通知",
@@ -255,5 +272,9 @@
     "installing": "正在安裝...",
     "install_success": "安裝成功",
     "install_tip": "請按照嚮導完成安裝"
+  },
+  "emoji": {
+    "default": "默認",
+    "hot": "熱門"
   }
 }
