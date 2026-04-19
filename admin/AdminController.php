@@ -68,6 +68,7 @@ class AdminController extends Controller
         $cacheFile = ROOT_PATH . 'temp' . DIRECTORY_SEPARATOR . 'version_check.json';
         $cacheTime = 3600;
         
+        // 如果缓存文件存在且未过期，直接返回缓存
         if (file_exists($cacheFile)) {
             $cache = json_decode(file_get_contents($cacheFile), true);
             if ($cache && isset($cache['timestamp']) && (time() - $cache['timestamp']) < $cacheTime) {
@@ -83,8 +84,17 @@ class AdminController extends Controller
             'timestamp' => time()
         ];
         
+        // 检查 curl 扩展是否可用
+        if (!function_exists('curl_init')) {
+            return $versionInfo;
+        }
+        
         try {
             $ch = curl_init();
+            if ($ch === false) {
+                return $versionInfo;
+            }
+            
             curl_setopt_array($ch, [
                 CURLOPT_URL => 'https://gitee.com/api/v5/repos/youruihu/husns/releases/latest',
                 CURLOPT_RETURNTRANSFER => true,
@@ -109,12 +119,21 @@ class AdminController extends Controller
                 }
             }
         } catch (Exception $e) {
+            // 忽略异常，返回默认版本信息
         }
         
-        if (!is_dir(dirname($cacheFile))) {
-            mkdir(dirname($cacheFile), 0755, true);
+        // 尝试写入缓存文件，失败不影响功能
+        try {
+            $cacheDir = dirname($cacheFile);
+            if (!is_dir($cacheDir)) {
+                @mkdir($cacheDir, 0755, true);
+            }
+            if (is_dir($cacheDir) && is_writable($cacheDir)) {
+                @file_put_contents($cacheFile, json_encode($versionInfo));
+            }
+        } catch (Exception $e) {
+            // 缓存写入失败不影响功能
         }
-        file_put_contents($cacheFile, json_encode($versionInfo));
         
         return $versionInfo;
     }
