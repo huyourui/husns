@@ -490,7 +490,8 @@ class MobileController extends Controller
 
         $page = (int)Helper::get('page', 1);
         $pageSize = 10;
-        $posts = $this->postModel->getUserPosts($_SESSION['user_id'], $page, $pageSize);
+        $postsData = $this->postModel->getUserPosts($_SESSION['user_id'], $page, $pageSize);
+        $posts = $postsData['items'] ?? [];
 
         $topicUrl = Helper::url('mobile/topic?keyword=$1');
         $userUrl = Helper::url('mobile/user?username=$1');
