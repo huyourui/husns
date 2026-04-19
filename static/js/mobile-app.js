@@ -317,26 +317,38 @@
                 self.loading = false;
 
                 if (res.code === 0) {
-                    var posts = res.data.items;
+                    var posts = res.data.items || [];
                     var container = document.getElementById('postList');
+                    
+                    if (!container) {
+                        console.error('postList container not found');
+                        return;
+                    }
                     
                     if (!append) {
                         container.innerHTML = '';
                         self.currentPage = 1;
                     }
 
-                    posts.forEach(function(post) {
-                        container.insertAdjacentHTML('beforeend', self.renderPostItem(post));
-                    });
+                    if (posts.length === 0 && !append) {
+                        container.innerHTML = '<div class="empty-state">暂无热门内容</div>';
+                    } else {
+                        posts.forEach(function(post) {
+                            container.insertAdjacentHTML('beforeend', self.renderPostItem(post));
+                        });
+                    }
 
-                    self.hasMore = res.data.pagination.has_more;
+                    self.hasMore = res.data.pagination ? res.data.pagination.has_more : false;
                     self.currentPage = page;
                     self.updateLoadMoreButton();
+                } else {
+                    self.showToast(res.message || '加载失败', 'error');
                 }
             }).catch(function(err) {
                 self.hideLoading();
                 self.loading = false;
-                self.showToast('加载失败', 'error');
+                console.error('loadHotPosts error:', err);
+                self.showToast('加载失败: ' + (err.message || '未知错误'), 'error');
             });
         },
 

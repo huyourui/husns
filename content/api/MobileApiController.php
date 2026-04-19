@@ -381,10 +381,10 @@ class MobileApiController extends Controller
                 INNER JOIN __PREFIX__users u ON p.user_id = u.id 
                 WHERE p.status = 1 
                 HAVING hot_score >= ?
-                ORDER BY p.created_at DESC 
-                LIMIT ?, ?";
+                ORDER BY hot_score DESC, p.created_at DESC 
+                LIMIT {$offset}, {$pageSize}";
 
-        $posts = $this->db->fetchAll($sql, [$threshold, $offset, $pageSize]);
+        $posts = $this->db->fetchAll($sql, [$threshold]);
         
         $formattedPosts = [];
         foreach ($posts as $post) {
