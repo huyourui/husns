@@ -32,7 +32,7 @@
                 }
             };
 
-            var url = this.baseUrl + '/?r=api/' + action;
+            var url = this.baseUrl + '/?r=mobileApi/' + action;
             
             if (method === 'GET' && data) {
                 var params = [];

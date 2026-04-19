@@ -228,6 +228,12 @@ php tests/run.php Helper
 
 ## 更新日志
 
+### v3.5.1 (2026-04-19)
+- 🐛 **Bug修复**
+  - 修复移动端API路由无法正确加载的问题
+  - 在App.php中添加MobileApiController映射
+  - 修正JavaScript中的API调用路径
+
 ### v3.5.0 (2026-04-19)
 - 🔄 **移动端全面重构**
   - 基于API的全新移动端架构，前后端完全分离

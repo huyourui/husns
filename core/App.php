@@ -29,6 +29,7 @@ class App
         'DownloadController' => 'content/download/DownloadController.php',
         'TopicController' => 'content/topic/TopicController.php',
         'MobileController' => 'content/mobile/MobileController.php',
+        'MobileApiController' => 'content/api/MobileApiController.php',
     ];
     
     /**
