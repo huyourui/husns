@@ -52,7 +52,9 @@
     "language": "語言",
     "theme": "主題",
     "dark_mode": "深色模式",
-    "light_mode": "淺色模式"
+    "light_mode": "淺色模式",
+    "link": "友情連結",
+    "mobile_version": "移動版"
   },
   "nav": {
     "home": "首頁",
@@ -96,7 +98,8 @@
     "hours_ago": "{n}小時前",
     "days_ago": "{n}天前",
     "pinned": "置頂",
-    "featured": "精華"
+    "featured": "精華",
+    "also_comment": "同時評論"
   },
   "user": {
     "username": "使用者名稱",

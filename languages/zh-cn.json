@@ -52,7 +52,9 @@
     "language": "语言",
     "theme": "主题",
     "dark_mode": "深色模式",
-    "light_mode": "浅色模式"
+    "light_mode": "浅色模式",
+    "link": "友情链接",
+    "mobile_version": "移动版"
   },
   "nav": {
     "home": "首页",
@@ -96,7 +98,8 @@
     "hours_ago": "{n}小时前",
     "days_ago": "{n}天前",
     "pinned": "置顶",
-    "featured": "精华"
+    "featured": "精华",
+    "also_comment": "同时评论"
   },
   "user": {
     "username": "用户名",

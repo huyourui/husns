@@ -52,7 +52,9 @@
     "language": "Language",
     "theme": "Theme",
     "dark_mode": "Dark Mode",
-    "light_mode": "Light Mode"
+    "light_mode": "Light Mode",
+    "link": "Links",
+    "mobile_version": "Mobile"
   },
   "nav": {
     "home": "Home",
@@ -96,7 +98,8 @@
     "hours_ago": "{n} hours ago",
     "days_ago": "{n} days ago",
     "pinned": "Pinned",
-    "featured": "Featured"
+    "featured": "Featured",
+    "also_comment": "Also comment"
   },
   "user": {
     "username": "Username",

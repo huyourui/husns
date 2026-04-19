@@ -33,25 +33,25 @@
         <div class="container">
             <a href="<?php echo $this->url(); ?>" class="logo"><?php echo $this->escape(Setting::getSiteName()); ?></a>
             <nav class="nav">
-                <a href="<?php echo $this->url(); ?>">首页</a>
-                <a href="<?php echo $this->url('post/hot'); ?>">热门</a>
-                <a href="<?php echo $this->url('post/featured'); ?>">推荐</a>
+                <a href="<?php echo $this->url(); ?>"><?php echo $this->t('nav.home'); ?></a>
+                <a href="<?php echo $this->url('post/hot'); ?>"><?php echo $this->t('nav.hot'); ?></a>
+                <a href="<?php echo $this->url('post/featured'); ?>"><?php echo $this->t('common.recommend'); ?></a>
                 <?php if (isset($_SESSION['user_id'])): ?>
-                <a href="<?php echo $this->url('user/profile'); ?>">个人中心</a>
+                <a href="<?php echo $this->url('user/profile'); ?>"><?php echo $this->t('nav.profile'); ?></a>
                 <a href="<?php echo $this->url('notification'); ?>" class="notification-link" id="notificationLink">
-                    消息
+                    <?php echo $this->t('nav.message'); ?>
                     <span class="notification-badge" id="notificationBadge" style="display:none;">0</span>
                 </a>
-                <a href="<?php echo $this->url('user/settings'); ?>">设置</a>
+                <a href="<?php echo $this->url('user/settings'); ?>"><?php echo $this->t('common.settings'); ?></a>
                 <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
-                <a href="<?php echo $this->url('admin'); ?>">后台管理</a>
+                <a href="<?php echo $this->url('admin'); ?>"><?php echo $this->t('common.admin'); ?></a>
                 <?php endif; ?>
-                <a href="<?php echo $this->url('user/logout'); ?>">退出</a>
+                <a href="<?php echo $this->url('user/logout'); ?>"><?php echo $this->t('common.logout'); ?></a>
                 <?php else: ?>
-                <a href="<?php echo $this->url('user/login'); ?>">登录</a>
-                <a href="<?php echo $this->url('user/register'); ?>">注册</a>
+                <a href="<?php echo $this->url('user/login'); ?>"><?php echo $this->t('common.login'); ?></a>
+                <a href="<?php echo $this->url('user/register'); ?>"><?php echo $this->t('common.register'); ?></a>
                 <?php endif; ?>
-                <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+                <button class="theme-toggle" id="themeToggle" title="<?php echo $this->t('common.theme'); ?>">🌙</button>
             </nav>
         </div>
     </header>
@@ -78,7 +78,7 @@
         <div class="container">
             <?php if (!empty($links)): ?>
             <div class="footer-links">
-                <span class="footer-links-label">友情链接：</span>
+                <span class="footer-links-label"><?php echo $this->t('common.link'); ?>：</span>
                 <?php foreach ($links as $link): ?>
                 <a href="<?php echo $this->escape($link['url']); ?>" target="_blank" rel="noopener"><?php echo $this->escape($link['name']); ?></a>
                 <?php endforeach; ?>
@@ -92,7 +92,7 @@
             ?>
             <p class="icp-info"><a href="<?php echo $this->escape($icpUrl); ?>" target="_blank" rel="noopener"><?php echo $this->escape($icpNumber); ?></a></p>
             <?php endif; ?>
-            <p class="mobile-link"><a href="javascript:void(0)" onclick="switchToMobile()">移动版</a></p>
+            <p class="mobile-link"><a href="javascript:void(0)" onclick="switchToMobile()"><?php echo $this->t('common.mobile_version'); ?></a></p>
             
             <?php
             // 语言切换器（放在页脚）
@@ -112,7 +112,7 @@
             if (count($availableLangs) > 1):
             ?>
             <div class="footer-language">
-                <span class="footer-language-label"><i class="lang-icon">🌐</i> 语言</span>
+                <span class="footer-language-label"><i class="lang-icon">🌐</i> <?php echo $this->t('common.language'); ?></span>
                 <div class="lang-divider"></div>
                 <?php 
                 $langIndex = 0;
@@ -134,21 +134,21 @@
     <div class="repost-modal" id="repostModal" style="display:none;">
         <div class="repost-modal-content">
             <div class="repost-modal-header">
-                <h3>转发微博</h3>
+                <h3><?php echo $this->t('post.repost'); ?></h3>
                 <span class="repost-modal-close" onclick="closeRepostModal()">×</span>
             </div>
             <form id="repostForm">
                 <input type="hidden" name="csrf_token" value="<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>">
                 <input type="hidden" name="post_id" id="repostPostId">
-                <textarea name="content" placeholder="说点什么吧..." rows="3" data-max-length="<?php echo Setting::getMaxPostLength(); ?>"></textarea>
+                <textarea name="content" placeholder="<?php echo $this->t('post.repost_placeholder'); ?>" rows="3" data-max-length="<?php echo Setting::getMaxPostLength(); ?>"></textarea>
                 <div class="repost-modal-footer">
                     <label class="repost-checkbox">
-                        <input type="checkbox" name="also_comment" value="1"> 同时评论
+                        <input type="checkbox" name="also_comment" value="1"> <?php echo $this->t('post.also_comment'); ?>
                     </label>
                     <div class="char-counter">
                         <span class="char-count">0</span>/<span><?php echo Setting::getMaxPostLength(); ?></span>
                     </div>
-                    <button type="submit" class="btn btn-primary">转发</button>
+                    <button type="submit" class="btn btn-primary"><?php echo $this->t('post.repost'); ?></button>
                 </div>
             </form>
         </div>
@@ -157,18 +157,18 @@
     <div id="editModal" class="modal" style="display:none;">
         <div class="modal-content" style="width:600px;">
             <div class="modal-header">
-                <h3>编辑微博</h3>
+                <h3><?php echo $this->t('post.edit_post'); ?></h3>
                 <span class="modal-close" onclick="closeEditModal()">&times;</span>
             </div>
             <form id="editForm">
                 <input type="hidden" name="csrf_token" value="<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>">
                 <input type="hidden" name="id" id="editPostId">
                 <div class="form-group">
-                    <textarea name="content" id="editContent" rows="5" style="width:100%;resize:vertical;" placeholder="请输入内容..."></textarea>
+                    <textarea name="content" id="editContent" rows="5" style="width:100%;resize:vertical;" placeholder="<?php echo $this->t('post.placeholder'); ?>"></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn" onclick="closeEditModal()">取消</button>
-                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn" onclick="closeEditModal()"><?php echo $this->t('common.cancel'); ?></button>
+                    <button type="submit" class="btn btn-primary"><?php echo $this->t('common.save'); ?></button>
                 </div>
             </form>
         </div>
