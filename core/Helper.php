@@ -476,8 +476,7 @@ class Helper
     /**
      * 解析微博内容（统一处理）
      * 
-     * 包括：HTML转义、话题链接、@用户链接、URL链接、表情
-     * 使用占位符机制避免双重转义
+     * 使用分词机制：先提取所有特殊标记，只对普通文本转义，再还原HTML
      * 
      * @param string $content 原始内容
      * @param string $topicUrl 话题链接模板（可选）
@@ -486,57 +485,52 @@ class Helper
      */
     public static function parseContent($content, $topicUrl = null, $userUrl = null)
     {
-        $placeholders = [];
-        $counter = 0;
-
-        preg_match_all('/(https?:\/\/[^\s<]+)/i', $content, $urlMatches);
-        if (!empty($urlMatches[1])) {
-            foreach ($urlMatches[1] as $url) {
-                $placeholder = '[[' . 'URL' . $counter . ']]';
-                $placeholders[$placeholder] = '<a href="' . $url . '" target="_blank" rel="noopener">' . $url . '</a>';
-                $content = str_replace($url, $placeholder, $content);
-                $counter++;
-            }
+        if ($topicUrl === null) {
+            $topicUrl = self::url('post/topic?keyword=$1');
+        }
+        if ($userUrl === null) {
+            $userUrl = self::url('user/profile?username=$1');
         }
 
-        preg_match_all('/#([^#\s]+)#/', $content, $topicMatches);
-        if (!empty($topicMatches[0])) {
-            if ($topicUrl === null) {
-                $topicUrl = self::url('post/topic?keyword=$1');
+        $tokens = [];
+        $tokenIndex = 0;
+
+        $pattern = '/(https?:\/\/[^\s<]+|#([^#\s]+)#|@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;：]))/u';
+
+        $result = preg_replace_callback($pattern, function($matches) use (&$tokens, &$tokenIndex, $topicUrl, $userUrl) {
+            $fullMatch = $matches[0];
+            
+            if (!empty($matches[1]) && strpos($matches[1], 'http') === 0) {
+                $url = $matches[1];
+                $tokenKey = "\x00T" . $tokenIndex . "\x00";
+                $tokens[$tokenKey] = '<a href="' . $url . '" target="_blank" rel="noopener">' . $url . '</a>';
+            } elseif (!empty($matches[2])) {
+                $topicName = $matches[2];
+                $tokenKey = "\x00T" . $tokenIndex . "\x00";
+                $tokens[$tokenKey] = '<a href="' . str_replace('$1', urlencode($topicName), $topicUrl) . '">#' . Security::escape($topicName) . '#</a>';
+            } elseif (!empty($matches[3])) {
+                $username = $matches[3];
+                $tokenKey = "\x00T" . $tokenIndex . "\x00";
+                $tokens[$tokenKey] = '<a href="' . str_replace('$1', urlencode($username), $userUrl) . '">@' . Security::escape($username) . '</a>';
+            } else {
+                return $fullMatch;
             }
-            foreach ($topicMatches[0] as $idx => $fullMatch) {
-                $topicName = $topicMatches[1][$idx];
-                $placeholder = '[[' . 'TOPIC' . $counter . ']]';
-                $placeholders[$placeholder] = '<a href="' . str_replace('$1', urlencode($topicName), $topicUrl) . '">#' . $topicName . '#</a>';
-                $content = str_replace($fullMatch, $placeholder, $content);
-                $counter++;
-            }
+            
+            $tokenIndex++;
+            return $tokenKey;
+        }, $content);
+
+        $result = Security::escape($result);
+
+        foreach ($tokens as $tokenKey => $htmlTag) {
+            $escapedToken = str_replace(["\x00"], ['&#0;'], $tokenKey);
+            $escapedToken = htmlspecialchars($escapedToken, ENT_QUOTES, 'UTF-8');
+            $result = str_replace($escapedToken, $htmlTag, $result);
         }
 
-        preg_match_all('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;:：])/u', $content, $userMatches);
-        if (!empty($userMatches[0])) {
-            if ($userUrl === null) {
-                $userUrl = self::url('user/profile?username=$1');
-            }
-            foreach ($userMatches[0] as $idx => $fullMatch) {
-                $username = $userMatches[1][$idx];
-                $placeholder = '[[' . 'USER' . $counter . ']]';
-                $placeholders[$placeholder] = '<a href="' . str_replace('$1', urlencode($username), $userUrl) . '">@' . $username . '</a>';
-                $content = str_replace($fullMatch, $placeholder, $content);
-                $counter++;
-            }
-        }
+        $result = self::parseEmojis($result);
 
-        $content = Security::escape($content);
-
-        $content = self::parseEmojis($content);
-
-        foreach ($placeholders as $placeholder => $replacement) {
-            $escapedPlaceholder = Security::escape($placeholder);
-            $content = str_replace($escapedPlaceholder, $replacement, $content);
-        }
-
-        return $content;
+        return $result;
     }
     
     public static function getEmojiList()
