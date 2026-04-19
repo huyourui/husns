@@ -184,38 +184,94 @@ class MobileController extends Controller
             return;
         }
 
+        $emailVerifyEnabled = Setting::isRegistrationEmailVerifyEnabled();
+        $requireInviteCode = (int)Setting::get('require_invite_code', 0) === 1;
+
         if (Helper::isPost()) {
             $username = trim(Helper::post('username'));
             $password = Helper::post('password');
             $confirmPassword = Helper::post('confirm_password');
             $email = trim(Helper::post('email'));
+            $emailCode = trim(Helper::post('email_code'));
+            $inviteCode = trim(Helper::post('invite_code'));
 
-            if (!Security::validateUsername($username)) {
-                Helper::setFlash('error', '用户名格式不正确');
-                $this->redirect(Helper::url('mobile/register'));
-                return;
+            $errors = [];
+
+            $minLength = Setting::getUsernameMinLength();
+            $maxLength = Setting::getUsernameMaxLength();
+            $usernameLength = mb_strlen($username, 'UTF-8');
+
+            if ($usernameLength < $minLength) {
+                $errors[] = '用户名至少需要' . $minLength . '个字符';
+            } elseif ($usernameLength > $maxLength) {
+                $errors[] = '用户名最多允许' . $maxLength . '个字符';
+            } elseif (!preg_match('/^[a-zA-Z0-9_\x{4e00}-\x{9fa5}]+$/u', $username)) {
+                $errors[] = '用户名只能包含字母、数字、下划线和中文';
             }
 
-            if (strlen($password) < 6) {
-                Helper::setFlash('error', '密码至少6位');
-                $this->redirect(Helper::url('mobile/register'));
-                return;
-            }
-
-            if ($password !== $confirmPassword) {
-                Helper::setFlash('error', '两次密码不一致');
-                $this->redirect(Helper::url('mobile/register'));
-                return;
+            $bannedUsernames = Setting::getBannedUsernames();
+            if (!empty($bannedUsernames)) {
+                $usernameLower = strtolower($username);
+                foreach ($bannedUsernames as $banned) {
+                    if (strpos($usernameLower, strtolower($banned)) !== false) {
+                        $errors[] = '用户名包含禁用字符';
+                        break;
+                    }
+                }
             }
 
             if ($this->userModel->findByUsername($username)) {
-                Helper::setFlash('error', '用户名已存在');
-                $this->redirect(Helper::url('mobile/register'));
-                return;
+                $errors[] = '用户名已存在';
             }
 
-            if (!empty($email) && $this->userModel->findByEmail($email)) {
-                Helper::setFlash('error', '邮箱已被注册');
+            if (strlen($password) < 6) {
+                $errors[] = '密码长度至少6位';
+            }
+
+            if ($password !== $confirmPassword) {
+                $errors[] = '两次密码输入不一致';
+            }
+
+            if ($emailVerifyEnabled || !empty($email)) {
+                if (!Security::validateEmail($email)) {
+                    $errors[] = '邮箱格式不正确';
+                } else {
+                    $allowedSuffixes = Setting::getAllowedEmailSuffixes();
+                    if (!empty($allowedSuffixes)) {
+                        $emailSuffix = substr($email, strrpos($email, '@') + 1);
+                        if (!in_array($emailSuffix, $allowedSuffixes)) {
+                            $errors[] = '只允许使用以下邮箱后缀注册：' . implode(', ', $allowedSuffixes);
+                        }
+                    }
+
+                    if ($this->userModel->findByEmail($email)) {
+                        $errors[] = '邮箱已被注册';
+                    }
+                }
+            }
+
+            if ($emailVerifyEnabled) {
+                if (empty($emailCode)) {
+                    $errors[] = '请输入邮箱验证码';
+                } elseif (!Mailer::verifyCode($email, $emailCode, '注册')) {
+                    $errors[] = '验证码错误或已过期';
+                }
+            }
+
+            if ($requireInviteCode) {
+                if (empty($inviteCode)) {
+                    $errors[] = '请输入邀请码';
+                } else {
+                    require_once ROOT_PATH . 'content/invite/InviteController.php';
+                    $validCode = InviteController::verifyCode($inviteCode);
+                    if (!$validCode) {
+                        $errors[] = '邀请码无效或已被使用';
+                    }
+                }
+            }
+
+            if (!empty($errors)) {
+                Helper::setFlash('error', implode('，', $errors));
                 $this->redirect(Helper::url('mobile/register'));
                 return;
             }
@@ -227,11 +283,19 @@ class MobileController extends Controller
             ]);
 
             if ($userId) {
+                if ($requireInviteCode && !empty($inviteCode)) {
+                    require_once ROOT_PATH . 'content/invite/InviteController.php';
+                    InviteController::useCode($inviteCode, $userId);
+                }
+
                 $_SESSION['user_id'] = $userId;
                 $_SESSION['username'] = $username;
                 $_SESSION['is_admin'] = 0;
 
                 session_regenerate_id(true);
+
+                Hook::trigger('user_register', ['id' => $userId, 'username' => $username, 'email' => $email]);
+                Hook::trigger('user_login', ['id' => $userId, 'username' => $username]);
 
                 Helper::setFlash('success', '注册成功');
                 $this->redirect(Helper::url('mobile'));
@@ -244,7 +308,9 @@ class MobileController extends Controller
 
         $this->render('register', [
             'hideTabBar' => true,
-            'headerTitle' => '注册'
+            'headerTitle' => '注册',
+            'emailVerifyEnabled' => $emailVerifyEnabled,
+            'requireInviteCode' => $requireInviteCode
         ]);
     }
 
