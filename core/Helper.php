@@ -495,42 +495,44 @@ class Helper
         $tokens = [];
         $tokenIndex = 0;
 
-        $pattern = '/(https?:\/\/[^\s<]+|#([^#\s]+)#|@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;：]))/u';
-
-        $result = preg_replace_callback($pattern, function($matches) use (&$tokens, &$tokenIndex, $topicUrl, $userUrl) {
-            $fullMatch = $matches[0];
-            
-            if (!empty($matches[1]) && strpos($matches[1], 'http') === 0) {
-                $url = $matches[1];
-                $tokenKey = "\x00T" . $tokenIndex . "\x00";
-                $tokens[$tokenKey] = '<a href="' . $url . '" target="_blank" rel="noopener">' . $url . '</a>';
-            } elseif (!empty($matches[2])) {
-                $topicName = $matches[2];
-                $tokenKey = "\x00T" . $tokenIndex . "\x00";
-                $tokens[$tokenKey] = '<a href="' . str_replace('$1', urlencode($topicName), $topicUrl) . '">#' . Security::escape($topicName) . '#</a>';
-            } elseif (!empty($matches[3])) {
-                $username = $matches[3];
-                $tokenKey = "\x00T" . $tokenIndex . "\x00";
-                $tokens[$tokenKey] = '<a href="' . str_replace('$1', urlencode($username), $userUrl) . '">@' . Security::escape($username) . '</a>';
-            } else {
-                return $fullMatch;
-            }
-            
+        $urlPattern = '/(https?:\/\/[^\s<]+)/i';
+        $content = preg_replace_callback($urlPattern, function($matches) use (&$tokens, &$tokenIndex) {
+            $url = $matches[1];
+            $tokenKey = "\x00T" . $tokenIndex . "\x00";
+            $tokens[$tokenKey] = '<a href="' . $url . '" target="_blank" rel="noopener">' . $url . '</a>';
             $tokenIndex++;
             return $tokenKey;
         }, $content);
 
-        $result = Security::escape($result);
+        $topicPattern = '/#([^#\s]+)#/';
+        $content = preg_replace_callback($topicPattern, function($matches) use (&$tokens, &$tokenIndex, $topicUrl) {
+            $topicName = $matches[1];
+            $tokenKey = "\x00T" . $tokenIndex . "\x00";
+            $tokens[$tokenKey] = '<a href="' . str_replace('$1', urlencode($topicName), $topicUrl) . '">#' . Security::escape($topicName) . '#</a>';
+            $tokenIndex++;
+            return $tokenKey;
+        }, $content);
+
+        $userPattern = '/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$|[,，。！!?？、；;:：])/u';
+        $content = preg_replace_callback($userPattern, function($matches) use (&$tokens, &$tokenIndex, $userUrl) {
+            $username = $matches[1];
+            $tokenKey = "\x00T" . $tokenIndex . "\x00";
+            $tokens[$tokenKey] = '<a href="' . str_replace('$1', urlencode($username), $userUrl) . '">@' . Security::escape($username) . '</a>';
+            $tokenIndex++;
+            return $tokenKey;
+        }, $content);
+
+        $content = Security::escape($content);
 
         foreach ($tokens as $tokenKey => $htmlTag) {
             $escapedToken = str_replace(["\x00"], ['&#0;'], $tokenKey);
             $escapedToken = htmlspecialchars($escapedToken, ENT_QUOTES, 'UTF-8');
-            $result = str_replace($escapedToken, $htmlTag, $result);
+            $content = str_replace($escapedToken, $htmlTag, $content);
         }
 
-        $result = self::parseEmojis($result);
+        $content = self::parseEmojis($content);
 
-        return $result;
+        return $content;
     }
     
     public static function getEmojiList()
