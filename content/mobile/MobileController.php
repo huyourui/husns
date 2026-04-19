@@ -340,7 +340,7 @@ class MobileController extends Controller
         $this->render('publish', [
             'currentPage' => 'publish',
             'headerTitle' => '发布微博',
-            'headerRight' => '<button type="submit" form="publishForm" class="m-btn-primary" style="background:none;border:none;color:var(--primary-color);font-weight:600;">发布</button>'
+            'showBack' => true
         ]);
     }
 

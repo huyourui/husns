@@ -21,7 +21,7 @@ if (php_sapi_name() !== 'cli') {
 }
 
 define('ROOT_PATH', str_replace('\\', '/', dirname(__FILE__)) . '/');
-define('APP_VERSION', '3.3.5');
+define('APP_VERSION', '3.3.6');
 
 require_once ROOT_PATH . 'config.php';
 

@@ -15,21 +15,22 @@
         <textarea name="content" class="m-publish-textarea" placeholder="有什么新鲜事想分享给大家？" maxlength="<?php echo Setting::getMaxPostLength(); ?>"></textarea>
         
         <div class="m-publish-images" id="imageContainer">
-            <label class="m-publish-add-image">
+            <label class="m-publish-add-image" for="imageInput">
                 <span class="m-publish-add-icon">📷</span>
                 <span class="m-publish-add-text">添加图片</span>
-                <input type="file" id="imageInput" name="images[]" accept="image/*" multiple style="display:none" onchange="previewImages(this)">
             </label>
+            <input type="file" id="imageInput" name="images[]" accept="image/*" multiple style="display:none" onchange="M.previewImage(this)">
         </div>
         
         <div class="m-publish-toolbar">
-            <div class="m-publish-tools">
-                <label class="m-publish-tool" style="cursor:pointer;">
-                    📷
-                    <input type="file" accept="image/*" multiple style="display:none" onchange="previewImages(this)">
-                </label>
-            </div>
             <button type="submit" class="m-btn m-btn-primary m-publish-submit">发布</button>
         </div>
     </form>
 </div>
+
+<script>
+document.getElementById('publishForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    M.publishPost(this);
+});
+</script>
