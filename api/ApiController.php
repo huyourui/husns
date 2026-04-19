@@ -520,6 +520,70 @@ class ApiCommentController extends ApiController
 }
 
 /**
+ * 语言API控制器
+ */
+class ApiLanguageController extends ApiController
+{
+    /**
+     * 获取可用语言列表
+     * 
+     * GET /api/languages
+     */
+    public function index()
+    {
+        $languages = I18n::getAvailableLanguages();
+        $currentLang = I18n::getCurrentLang();
+        
+        $this->success([
+            'languages' => $languages,
+            'current' => $currentLang
+        ]);
+    }
+    
+    /**
+     * 切换语言
+     * 
+     * POST /api/languages/switch
+     */
+    public function switch()
+    {
+        $lang = $this->input('lang');
+        
+        if (empty($lang)) {
+            $this->validationError(['lang' => '语言代码不能为空']);
+        }
+        
+        $result = I18n::switchLanguage($lang);
+        
+        if ($result['success']) {
+            $this->success([
+                'language' => $result['language'],
+                'language_name' => $result['language_name']
+            ], $result['message']);
+        } else {
+            $this->error($result['message'], 5001);
+        }
+    }
+    
+    /**
+     * 获取当前语言
+     * 
+     * GET /api/languages/current
+     */
+    public function current()
+    {
+        $lang = I18n::getCurrentLang();
+        $info = I18n::getCurrentLanguageInfo();
+        
+        $this->success([
+            'code' => $lang,
+            'name' => $info['name'] ?? $lang,
+            'native_name' => $info['native_name'] ?? $info['name'] ?? $lang
+        ]);
+    }
+}
+
+/**
  * 用户API控制器
  */
 class ApiUserController extends ApiController

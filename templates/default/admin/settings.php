@@ -24,6 +24,7 @@
             <button type="button" class="tab-btn" data-tab="attachment">附件设置</button>
             <button type="button" class="tab-btn" data-tab="mail">邮件设置</button>
             <button type="button" class="tab-btn" data-tab="security">安全设置</button>
+            <button type="button" class="tab-btn" data-tab="language">语言设置</button>
         </div>
         
         <form method="post" action="<?php echo $this->url('admin/settings'); ?>">
@@ -272,6 +273,48 @@
                     <label>操作间隔时间（秒）</label>
                     <input type="number" name="action_interval" value="<?php echo $settings['action_interval'] ?? 0; ?>" min="0" max="60" placeholder="0">
                     <small>用户连续操作的最小间隔时间，0表示不限制，范围0-60秒</small>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="tab-language">
+                <div class="form-group">
+                    <label>语言切换模式</label>
+                    <select name="language_mode">
+                        <option value="manual" <?php echo ($settings['language_mode'] ?? 'manual') === 'manual' ? 'selected' : ''; ?>>用户手动切换</option>
+                        <option value="auto" <?php echo ($settings['language_mode'] ?? 'manual') === 'auto' ? 'selected' : ''; ?>>自动检测系统语言</option>
+                    </select>
+                    <small>自动模式下会根据用户浏览器语言自动切换，如果没有对应的语言包则使用默认语言</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>默认语言</label>
+                    <select name="default_language">
+                        <option value="zh-cn" <?php echo ($settings['default_language'] ?? 'zh-cn') === 'zh-cn' ? 'selected' : ''; ?>>简体中文</option>
+                        <option value="zh-tw" <?php echo ($settings['default_language'] ?? 'zh-cn') === 'zh-tw' ? 'selected' : ''; ?>>繁體中文</option>
+                        <option value="en" <?php echo ($settings['default_language'] ?? 'zh-cn') === 'en' ? 'selected' : ''; ?>>English</option>
+                    </select>
+                    <small>网站的默认显示语言，自动检测失败或手动模式时的默认选项</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>可用语言</label>
+                    <div class="checkbox-group">
+                        <?php
+                        $availableLangs = isset($settings['available_languages']) ? explode(',', $settings['available_languages']) : ['zh-cn', 'zh-tw', 'en'];
+                        $langNames = [
+                            'zh-cn' => '简体中文',
+                            'zh-tw' => '繁體中文',
+                            'en' => 'English'
+                        ];
+                        foreach ($langNames as $code => $name):
+                        ?>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="available_languages[]" value="<?php echo $code; ?>" <?php echo in_array($code, $availableLangs) ? 'checked' : ''; ?>>
+                            <?php echo $name; ?>
+                        </label>
+                        <?php endforeach; ?>
+                    </div>
+                    <small>用户可以选择的语言，至少选择一个</small>
                 </div>
             </div>
             

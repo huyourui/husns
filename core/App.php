@@ -41,6 +41,7 @@ class App
         'posts' => 'ApiPostController',
         'comments' => 'ApiCommentController',
         'users' => 'ApiUserController',
+        'languages' => 'ApiLanguageController',
     ];
 
     public function run()

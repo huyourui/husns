@@ -327,6 +327,50 @@ class View
         return Helper::csrfField();
     }
 
+    /**
+     * 获取翻译文本
+     * 
+     * @param string $key 翻译键
+     * @param array $params 替换参数
+     * @return string
+     */
+    public function lang($key, $params = [])
+    {
+        return I18n::get($key, $params);
+    }
+
+    /**
+     * 简写方法：获取翻译文本
+     * 
+     * @param string $key 翻译键
+     * @param array $params 替换参数
+     * @return string
+     */
+    public function t($key, $params = [])
+    {
+        return I18n::get($key, $params);
+    }
+
+    /**
+     * 获取当前语言代码
+     * 
+     * @return string
+     */
+    public function getLang()
+    {
+        return I18n::getCurrentLang();
+    }
+
+    /**
+     * 获取所有可用语言
+     * 
+     * @return array
+     */
+    public function getAvailableLanguages()
+    {
+        return I18n::getAvailableLanguages();
+    }
+
     public function flash($type)
     {
         return Helper::getFlash($type);

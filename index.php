@@ -13,7 +13,7 @@
  * 定义核心常量
  */
 define('ROOT_PATH', str_replace('\\', '/', dirname(__FILE__)) . '/');
-define('APP_VERSION', '3.5.11');
+define('APP_VERSION', '3.6.0');
 define('PHP_VERSION_MIN', '7.4.0');
 
 /**
@@ -105,7 +105,13 @@ require_once ROOT_PATH . 'core/Logger.php';
 require_once ROOT_PATH . 'core/ExceptionHandler.php';
 require_once ROOT_PATH . 'core/Queue.php';
 require_once ROOT_PATH . 'core/ApiController.php';
+require_once ROOT_PATH . 'core/I18n.php';
 require_once ROOT_PATH . 'core/App.php';
+
+/**
+ * 初始化国际化组件
+ */
+I18n::init();
 
 /**
  * 注册异常处理器

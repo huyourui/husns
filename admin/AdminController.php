@@ -631,6 +631,17 @@ class AdminController extends Controller
             $this->saveSettingValue('username_min_length', $usernameMinLength);
             $this->saveSettingValue('username_max_length', $usernameMaxLength);
             
+            $this->saveSettingValue('language_mode', Helper::post('language_mode', 'manual'));
+            $this->saveSettingValue('default_language', Helper::post('default_language', 'zh-cn'));
+            
+            // 处理可用语言数组
+            $availableLanguages = Helper::post('available_languages', ['zh-cn']);
+            if (is_array($availableLanguages)) {
+                $this->saveSettingValue('available_languages', implode(',', $availableLanguages));
+            } else {
+                $this->saveSettingValue('available_languages', 'zh-cn,zh-tw,en');
+            }
+            
             $this->setFlash('success', '设置保存成功');
             
             $currentTab = Helper::post('current_tab', 'basic');

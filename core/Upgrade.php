@@ -592,6 +592,14 @@ class Upgrade
                 "ALTER TABLE `{$prefix}posts` ADD COLUMN `edit_count` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '编辑次数' AFTER `is_featured`",
                 "ALTER TABLE `{$prefix}posts` ADD COLUMN `edited_at` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '最后编辑时间' AFTER `edit_count`",
             ],
+            /**
+             * 版本 3.6.0 - 添加多语言支持
+             */
+            '3.6.0' => [
+                "INSERT IGNORE INTO `{$prefix}settings` (`key`, `value`, `created_at`, `updated_at`) VALUES ('language_mode', 'manual', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())",
+                "INSERT IGNORE INTO `{$prefix}settings` (`key`, `value`, `created_at`, `updated_at`) VALUES ('default_language', 'zh-cn', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())",
+                "INSERT IGNORE INTO `{$prefix}settings` (`key`, `value`, `created_at`, `updated_at`) VALUES ('available_languages', 'zh-cn,zh-tw,en', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())",
+            ],
         ];
     }
 }
