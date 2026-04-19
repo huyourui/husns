@@ -105,20 +105,22 @@ class I18n
     
     /**
      * 确定当前语言
-     * 优先级：用户设置 > URL参数 > 系统配置 > 浏览器语言 > 默认语言
+     * 优先级：URL参数 > 用户主动选择 > 系统配置 > 浏览器语言 > 默认语言
      */
     private static function determineLanguage()
     {
-        // 1. 检查用户会话中的语言设置
-        if (isset($_SESSION['user_language']) && self::isValidLanguage($_SESSION['user_language'])) {
-            self::$currentLang = $_SESSION['user_language'];
-            return;
-        }
-        
-        // 2. 检查URL参数
+        // 1. 检查URL参数（最高优先级，用户明确指定）
         if (isset($_GET['lang']) && self::isValidLanguage($_GET['lang'])) {
             self::$currentLang = strtolower($_GET['lang']);
             $_SESSION['user_language'] = self::$currentLang;
+            $_SESSION['user_language_selected'] = true; // 标记为用户主动选择
+            return;
+        }
+        
+        // 2. 检查用户是否主动选择过语言
+        if (isset($_SESSION['user_language_selected']) && $_SESSION['user_language_selected'] 
+            && isset($_SESSION['user_language']) && self::isValidLanguage($_SESSION['user_language'])) {
+            self::$currentLang = $_SESSION['user_language'];
             return;
         }
         
@@ -137,7 +139,7 @@ class I18n
                 self::$currentLang = self::$defaultLang;
             }
         } else {
-            // 手动模式：使用默认语言
+            // 手动模式：使用后台设置的默认语言
             if ($defaultLang && self::isValidLanguage($defaultLang)) {
                 self::$currentLang = $defaultLang;
             } else {
@@ -145,6 +147,7 @@ class I18n
             }
         }
         
+        // 只保存当前语言，不标记为用户主动选择
         $_SESSION['user_language'] = self::$currentLang;
     }
     
@@ -278,9 +281,10 @@ class I18n
      * 设置当前语言
      * 
      * @param string $lang 语言代码
+     * @param bool $userSelected 是否为用户主动选择
      * @return bool
      */
-    public static function setLang($lang)
+    public static function setLang($lang, $userSelected = false)
     {
         $lang = strtolower($lang);
         
@@ -290,6 +294,11 @@ class I18n
         
         self::$currentLang = $lang;
         $_SESSION['user_language'] = $lang;
+        
+        // 标记是否为用户主动选择
+        if ($userSelected) {
+            $_SESSION['user_language_selected'] = true;
+        }
         
         // 清除缓存，重新加载
         unset(self::$translations[$lang]);

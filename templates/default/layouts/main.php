@@ -52,31 +52,6 @@
                 <a href="<?php echo $this->url('user/register'); ?>">注册</a>
                 <?php endif; ?>
                 <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
-                
-                <?php
-                // 语言切换器
-                $availableLangs = I18n::getAvailableLanguages();
-                $currentLang = I18n::getCurrentLang();
-                $langNames = [
-                    'zh-cn' => '简',
-                    'zh-tw' => '繁',
-                    'en' => 'EN'
-                ];
-                if (count($availableLangs) > 1):
-                ?>
-                <div class="language-switcher">
-                    <button class="language-toggle" id="languageToggle" title="切换语言">
-                        <?php echo $langNames[$currentLang] ?? strtoupper($currentLang); ?>
-                    </button>
-                    <div class="language-dropdown" id="languageDropdown" style="display:none;">
-                        <?php foreach ($availableLangs as $code => $info): ?>
-                        <a href="?lang=<?php echo $code; ?>" class="language-option<?php echo $code === $currentLang ? ' active' : ''; ?>">
-                            <?php echo $this->escape($info['name']); ?>
-                        </a>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <?php endif; ?>
             </nav>
         </div>
     </header>
@@ -118,6 +93,27 @@
             <p class="icp-info"><a href="<?php echo $this->escape($icpUrl); ?>" target="_blank" rel="noopener"><?php echo $this->escape($icpNumber); ?></a></p>
             <?php endif; ?>
             <p class="mobile-link"><a href="javascript:void(0)" onclick="switchToMobile()">移动版</a></p>
+            
+            <?php
+            // 语言切换器（放在页脚）
+            $availableLangs = I18n::getAvailableLanguages();
+            $currentLang = I18n::getCurrentLang();
+            $langNames = [
+                'zh-cn' => '简体中文',
+                'zh-tw' => '繁體中文',
+                'en' => 'English'
+            ];
+            if (count($availableLangs) > 1):
+            ?>
+            <div class="footer-language">
+                <span class="footer-language-label">语言：</span>
+                <?php foreach ($availableLangs as $code => $info): ?>
+                <a href="?lang=<?php echo $code; ?>" class="footer-language-link<?php echo $code === $currentLang ? ' active' : ''; ?>">
+                    <?php echo $this->escape($langNames[$code] ?? $info['name']); ?>
+                </a>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
         </div>
     </footer>
 

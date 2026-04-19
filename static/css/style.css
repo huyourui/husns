@@ -3172,3 +3172,48 @@ body.dark-mode .language-option.active {
     background: #7c83fd;
     color: #fff;
 }
+
+/* 页脚语言切换器样式 */
+.footer-language {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #999;
+}
+
+.footer-language-label {
+    margin-right: 5px;
+}
+
+.footer-language-link {
+    color: #666;
+    text-decoration: none;
+    margin: 0 8px;
+    transition: color 0.2s;
+}
+
+.footer-language-link:hover {
+    color: #667eea;
+    text-decoration: underline;
+}
+
+.footer-language-link.active {
+    color: #667eea;
+    font-weight: 500;
+}
+
+/* 深色模式下的页脚语言切换器 */
+body.dark-mode .footer-language {
+    color: #666;
+}
+
+body.dark-mode .footer-language-link {
+    color: #888;
+}
+
+body.dark-mode .footer-language-link:hover {
+    color: #7c83fd;
+}
+
+body.dark-mode .footer-language-link.active {
+    color: #7c83fd;
+}
