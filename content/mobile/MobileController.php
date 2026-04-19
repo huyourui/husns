@@ -427,6 +427,54 @@ class MobileController extends Controller
     }
 
     /**
+     * 标记单条消息为已读
+     */
+    public function markRead()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            $this->jsonError('请先登录', 401);
+            return;
+        }
+
+        $id = (int)Helper::post('id', Helper::get('id'));
+
+        if (!$id) {
+            $this->jsonError('参数错误');
+            return;
+        }
+
+        $notificationModel = new NotificationModel();
+        $result = $notificationModel->markAsRead($id, $_SESSION['user_id']);
+
+        if ($result) {
+            $unreadCount = $notificationModel->getUnreadCount($_SESSION['user_id']);
+            $this->jsonSuccess(['unread_count' => $unreadCount], '标记成功');
+        } else {
+            $this->jsonError('操作失败');
+        }
+    }
+
+    /**
+     * 标记所有消息为已读
+     */
+    public function markAllRead()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            $this->jsonError('请先登录', 401);
+            return;
+        }
+
+        $notificationModel = new NotificationModel();
+        $result = $notificationModel->markAllAsRead($_SESSION['user_id']);
+
+        if ($result !== false) {
+            $this->jsonSuccess(null, '全部已读');
+        } else {
+            $this->jsonError('操作失败');
+        }
+    }
+
+    /**
      * 个人中心页面
      */
     public function profile()
