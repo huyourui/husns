@@ -99,8 +99,6 @@ function markAsRead(element, event) {
 }
 
 function markAllRead() {
-    if (!confirm('确定将所有消息标记为已读吗？')) return;
-    
     fetch(BASE_URL + '/?r=mobile/markAllRead', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},

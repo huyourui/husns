@@ -13,7 +13,7 @@
  * 定义核心常量
  */
 define('ROOT_PATH', str_replace('\\', '/', dirname(__FILE__)) . '/');
-define('APP_VERSION', '3.2.9');
+define('APP_VERSION', '3.3.0');
 define('PHP_VERSION_MIN', '7.4.0');
 
 /**
