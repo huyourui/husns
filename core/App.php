@@ -61,6 +61,11 @@ class App
      */
     private function redirectMobile()
     {
+        // POST 请求不重定向（如发布微博等操作）
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            return;
+        }
+        
         $route = isset($_GET['r']) ? $_GET['r'] : '';
         
         if (strpos($route, 'mobile') === 0) {
