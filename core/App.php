@@ -49,10 +49,43 @@ class App
 
         $this->autoLogin();
         $this->checkBanned();
+        $this->redirectMobile();
         $this->parseUrl();
         $this->route();
 
         Hook::trigger('app_end');
+    }
+
+    /**
+     * 移动端自动跳转
+     */
+    private function redirectMobile()
+    {
+        $route = isset($_GET['r']) ? $_GET['r'] : '';
+        
+        if (strpos($route, 'mobile') === 0) {
+            return;
+        }
+
+        if (strpos($route, 'api/') === 0) {
+            return;
+        }
+
+        if (strpos($route, 'admin') === 0) {
+            return;
+        }
+
+        if (isset($_COOKIE['prefer_desktop']) && $_COOKIE['prefer_desktop'] === '1') {
+            return;
+        }
+
+        if (!Helper::isMobile()) {
+            return;
+        }
+
+        $mobileUrl = Helper::url('mobile');
+        header('Location: ' . $mobileUrl);
+        exit;
     }
     
     private function checkBanned()

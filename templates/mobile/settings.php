@@ -37,7 +37,7 @@
 </div>
 
 <div class="m-menu-list" style="margin-top:10px;">
-    <a href="<?php echo $this->url(); ?>" class="m-menu-item">
+    <a href="javascript:void(0)" onclick="switchToDesktop()" class="m-menu-item">
         <div class="m-menu-left">
             <span class="m-menu-icon">🖥️</span>
             <span class="m-menu-text">电脑版</span>
@@ -67,5 +67,10 @@ function toggleTheme() {
         localStorage.setItem('theme', 'dark');
         status.textContent = '已开启';
     }
+}
+
+function switchToDesktop() {
+    document.cookie = 'prefer_desktop=1; path=/; max-age=' + (365 * 24 * 60 * 60);
+    location.href = BASE_URL + '/';
 }
 </script>

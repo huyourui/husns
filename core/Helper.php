@@ -575,4 +575,83 @@ class Helper
             );
         }
     }
+
+    /**
+     * 检测是否为移动端设备
+     * 
+     * @return bool
+     */
+    public static function isMobile()
+    {
+        if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+            return false;
+        }
+
+        $userAgent = $_SERVER['HTTP_USER_AGENT'];
+
+        $mobileKeywords = [
+            'Mobile', 'Android', 'iPhone', 'iPad', 'iPod', 'Windows Phone',
+            'BlackBerry', 'webOS', 'Symbian', 'Opera Mini', 'IEMobile',
+            'HTC', 'Nokia', 'Samsung', 'SonyEricsson', 'Motorola',
+            'Kindle', 'Silk', 'MQQBrowser', 'MicroMessenger', 'WeiBo',
+            'UCBrowser', 'Quark', 'Baidu', 'Sogou', 'LieBao'
+        ];
+
+        foreach ($mobileKeywords as $keyword) {
+            if (stripos($userAgent, $keyword) !== false) {
+                if ($keyword === 'iPad' && stripos($userAgent, 'Macintosh') !== false) {
+                    continue;
+                }
+                return true;
+            }
+        }
+
+        if (isset($_SERVER['HTTP_ACCEPT'])) {
+            if (strpos($_SERVER['HTTP_ACCEPT'], 'application/vnd.wap.xhtml+xml') !== false) {
+                return true;
+            }
+        }
+
+        if (isset($_SERVER['HTTP_X_WAP_PROFILE']) || isset($_SERVER['HTTP_PROFILE'])) {
+            return true;
+        }
+
+        if (isset($_SERVER['ALL_HTTP']) && stripos($_SERVER['ALL_HTTP'], 'OperaMini') !== false) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 检测是否为平板设备
+     * 
+     * @return bool
+     */
+    public static function isTablet()
+    {
+        if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+            return false;
+        }
+
+        $userAgent = $_SERVER['HTTP_USER_AGENT'];
+
+        $tabletKeywords = ['iPad', 'Android', 'Kindle', 'Silk', 'PlayBook', 'Tablet'];
+
+        if (stripos($userAgent, 'iPad') !== false) {
+            return true;
+        }
+
+        if (stripos($userAgent, 'Android') !== false && stripos($userAgent, 'Mobile') === false) {
+            return true;
+        }
+
+        foreach ($tabletKeywords as $keyword) {
+            if (stripos($userAgent, $keyword) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

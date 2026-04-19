@@ -92,6 +92,7 @@
             ?>
             <p class="icp-info"><a href="<?php echo $this->escape($icpUrl); ?>" target="_blank" rel="noopener"><?php echo $this->escape($icpNumber); ?></a></p>
             <?php endif; ?>
+            <p class="mobile-link"><a href="javascript:void(0)" onclick="switchToMobile()">移动版</a></p>
         </div>
     </footer>
 
@@ -140,6 +141,11 @@
 
     <script>
         var BASE_URL = '<?php echo Helper::getBaseUrl(); ?>';
+        
+        function switchToMobile() {
+            document.cookie = 'prefer_desktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC';
+            location.href = BASE_URL + '/?r=mobile';
+        }
     </script>
     <script src="<?php echo $this->asset('js/app.js'); ?>"></script>
     <script>

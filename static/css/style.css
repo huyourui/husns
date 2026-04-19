@@ -166,6 +166,20 @@ body.dark-mode .timeline-tabs .tab-item.active {
     color: #667eea;
 }
 
+.footer .mobile-link {
+    margin: 10px 0 0 0;
+    font-size: 13px;
+}
+
+.footer .mobile-link a {
+    color: #aaa;
+    text-decoration: none;
+}
+
+.footer .mobile-link a:hover {
+    color: #667eea;
+}
+
 body.dark-mode .footer {
     color: #888;
     border-top-color: #333;
