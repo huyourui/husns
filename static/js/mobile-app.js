@@ -18,11 +18,10 @@
             this.baseUrl = baseUrl;
             this.bindEvents();
             var self = this;
-            this.checkLogin().then(function() {
-                self.initPage();
-            }).catch(function() {
-                self.initPage();
-            });
+            // 直接调用initPage，不等待checkLogin
+            this.initPage();
+            // 异步检查登录状态
+            this.checkLogin();
         },
 
         api: function(action, data, method) {
@@ -37,6 +36,7 @@
             };
 
             var url = this.baseUrl + '/?r=mobileApi/' + action;
+            console.log('API call:', url, 'action:', action, 'data:', data);
             
             if (method === 'GET' && data) {
                 var params = [];
@@ -55,9 +55,12 @@
                 }
             }
 
+            console.log('Final API URL:', url);
             return fetch(url, options)
                 .then(function(res) {
+                    console.log('API response status:', res.status);
                     return res.text().then(function(text) {
+                        console.log('API response text:', text.substring(0, 200));
                         try {
                             return JSON.parse(text);
                         } catch (e) {
@@ -79,10 +82,12 @@
                     self.currentUser = null;
                     self.updateUserUI(null);
                 }
+                return res;
             }).catch(function(err) {
                 console.error('Check login error:', err);
                 self.currentUser = null;
                 self.updateUserUI(null);
+                throw err;
             });
         },
 
@@ -228,6 +233,7 @@
 
         initPage: function() {
             var pageType = document.body.dataset.pageType;
+            console.log('initPage called, pageType:', pageType);
             
             switch (pageType) {
                 case 'home':
@@ -249,8 +255,11 @@
                     this.loadUserPage();
                     break;
                 case 'notification':
+                    console.log('Loading notifications page...');
                     this.loadNotifications();
                     break;
+                default:
+                    console.log('Unknown pageType:', pageType);
             }
         },
 
@@ -467,18 +476,22 @@
         loadNotifications: function() {
             var self = this;
             this.showLoading();
+            console.log('Loading notifications...');
             this.api('notifications', { page: 1 }).then(function(res) {
                 self.hideLoading();
                 console.log('notifications response:', res);
+                var container = document.getElementById('notificationList');
+                console.log('notificationList container:', container);
                 if (res.code === 0) {
-                    var container = document.getElementById('notificationList');
                     if (container) {
                         container.innerHTML = '';
                         var items = res.data.items || [];
+                        console.log('notification items:', items);
                         if (items.length === 0) {
                             container.innerHTML = '<div class="empty-state">暂无消息</div>';
                         } else {
                             items.forEach(function(notification) {
+                                console.log('rendering notification:', notification);
                                 container.insertAdjacentHTML('beforeend', self.renderNotificationItem(notification));
                             });
                         }
