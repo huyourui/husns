@@ -237,9 +237,11 @@
         initPage: function() {
             var pageType = document.body.dataset.pageType;
             console.log('initPage called, pageType:', pageType);
+            console.log('document.body.dataset:', document.body.dataset);
             
             switch (pageType) {
                 case 'home':
+                    console.log('Calling loadPosts for home page...');
                     this.loadPosts();
                     break;
                 case 'hot':
@@ -268,20 +270,24 @@
 
         loadPosts: function(append) {
             var self = this;
+            console.log('loadPosts called, loading:', this.loading);
             if (this.loading) return;
             
             this.loading = true;
             this.showLoading();
 
             var page = append ? this.currentPage + 1 : 1;
+            console.log('Loading posts, page:', page, 'tab:', this.currentTab);
 
             this.api('posts', { page: page, tab: this.currentTab }).then(function(res) {
                 self.hideLoading();
                 self.loading = false;
+                console.log('loadPosts response:', res);
 
                 if (res.code === 0) {
                     var posts = res.data.items || [];
                     var container = document.getElementById('postList');
+                    console.log('postList container:', container, 'posts count:', posts.length);
                     
                     if (!container) {
                         console.error('postList container not found');
@@ -1113,7 +1119,10 @@
     window.App = App;
 
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOMContentLoaded event fired');
         var baseUrl = document.body.dataset.baseUrl || '';
+        console.log('baseUrl from body:', baseUrl);
+        console.log('document.body.dataset.pageType:', document.body.dataset.pageType);
         App.init(baseUrl);
     });
 
