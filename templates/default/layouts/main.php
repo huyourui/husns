@@ -103,15 +103,29 @@
                 'zh-tw' => '繁體中文',
                 'en' => 'English'
             ];
+            // 构建当前 URL（保留其他参数）
+            $currentUrl = $_SERVER['REQUEST_URI'];
+            // 移除已有的 lang 参数
+            $currentUrl = preg_replace('/([?&])lang=[^&]+(&|$)/', '$1', $currentUrl);
+            $currentUrl = rtrim($currentUrl, '?&');
+            $separator = strpos($currentUrl, '?') === false ? '?' : '&';
             if (count($availableLangs) > 1):
             ?>
             <div class="footer-language">
-                <span class="footer-language-label">语言：</span>
-                <?php foreach ($availableLangs as $code => $info): ?>
-                <a href="?lang=<?php echo $code; ?>" class="footer-language-link<?php echo $code === $currentLang ? ' active' : ''; ?>">
+                <span class="footer-language-label"><i class="lang-icon">🌐</i> 语言</span>
+                <div class="lang-divider"></div>
+                <?php 
+                $langIndex = 0;
+                foreach ($availableLangs as $code => $info): 
+                    $langUrl = $currentUrl . $separator . 'lang=' . $code;
+                ?>
+                <a href="<?php echo $langUrl; ?>" class="footer-language-link<?php echo $code === $currentLang ? ' active' : ''; ?>">
                     <?php echo $this->escape($langNames[$code] ?? $info['name']); ?>
                 </a>
-                <?php endforeach; ?>
+                <?php 
+                $langIndex++;
+                endforeach; 
+                ?>
             </div>
             <?php endif; ?>
         </div>

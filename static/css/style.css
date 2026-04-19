@@ -3173,47 +3173,110 @@ body.dark-mode .language-option.active {
     color: #fff;
 }
 
-/* 页脚语言切换器样式 */
+/* 页脚语言切换器样式 - 美化版 */
 .footer-language {
-    margin-top: 10px;
+    margin-top: 15px;
+    padding: 12px 20px;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 25px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     font-size: 13px;
-    color: #999;
+    border: 1px solid rgba(102, 126, 234, 0.15);
+    transition: all 0.3s ease;
+}
+
+.footer-language:hover {
+    background: rgba(102, 126, 234, 0.08);
+    border-color: rgba(102, 126, 234, 0.25);
 }
 
 .footer-language-label {
-    margin-right: 5px;
+    color: #667eea;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.lang-icon {
+    font-size: 14px;
+    filter: grayscale(0.3);
+}
+
+.lang-divider {
+    width: 1px;
+    height: 16px;
+    background: linear-gradient(to bottom, transparent, rgba(102, 126, 234, 0.3), transparent);
+    margin: 0 4px;
 }
 
 .footer-language-link {
     color: #666;
     text-decoration: none;
-    margin: 0 8px;
-    transition: color 0.2s;
+    padding: 4px 12px;
+    border-radius: 15px;
+    transition: all 0.25s ease;
+    position: relative;
+    font-weight: 400;
 }
 
 .footer-language-link:hover {
     color: #667eea;
-    text-decoration: underline;
+    background: rgba(102, 126, 234, 0.1);
+    text-decoration: none;
 }
 
 .footer-language-link.active {
-    color: #667eea;
+    color: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     font-weight: 500;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.footer-language-link.active:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+    box-shadow: 0 3px 12px rgba(102, 126, 234, 0.4);
 }
 
 /* 深色模式下的页脚语言切换器 */
 body.dark-mode .footer-language {
-    color: #666;
+    background: rgba(124, 131, 253, 0.08);
+    border-color: rgba(124, 131, 253, 0.2);
+}
+
+body.dark-mode .footer-language:hover {
+    background: rgba(124, 131, 253, 0.12);
+    border-color: rgba(124, 131, 253, 0.3);
+}
+
+body.dark-mode .footer-language-label {
+    color: #7c83fd;
+}
+
+body.dark-mode .lang-divider {
+    background: linear-gradient(to bottom, transparent, rgba(124, 131, 253, 0.3), transparent);
 }
 
 body.dark-mode .footer-language-link {
-    color: #888;
+    color: #aaa;
 }
 
 body.dark-mode .footer-language-link:hover {
     color: #7c83fd;
+    background: rgba(124, 131, 253, 0.15);
 }
 
 body.dark-mode .footer-language-link.active {
-    color: #7c83fd;
+    color: #fff;
+    background: linear-gradient(135deg, #7c83fd 0%, #9b59b6 100%);
+    box-shadow: 0 2px 8px rgba(124, 131, 253, 0.3);
+}
+
+body.dark-mode .footer-language-link.active:hover {
+    background: linear-gradient(135deg, #6b72ec 0%, #8a4aa5 100%);
+    box-shadow: 0 3px 12px rgba(124, 131, 253, 0.4);
 }
