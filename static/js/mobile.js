@@ -122,9 +122,12 @@
                 }
             });
 
+            // 删除原有的 images 字段（文件输入）
             formData.delete('images');
-            imageFiles.forEach(function(path, index) {
-                formData.append('images[' + index + ']', path);
+            
+            // 使用简单数组格式发送图片路径
+            imageFiles.forEach(function(path) {
+                formData.append('images[]', path);
             });
 
             var submitBtn = form.querySelector('.m-publish-submit');

@@ -176,9 +176,9 @@ class PostController extends Controller
         }
         // 处理已上传的图片路径（移动端）
         elseif (!empty($_POST['images']) && is_array($_POST['images'])) {
-            $images = array_filter($_POST['images'], function($path) {
-                return !empty($path) && preg_match('/^[a-zA-Z0-9_\-\/\.]+$/', $path);
-            });
+            $images = array_values(array_filter($_POST['images'], function($path) {
+                return !empty($path) && is_string($path) && preg_match('/^[a-zA-Z0-9_\-\/\.]+$/', $path);
+            }));
         }
 
         $attachments = [];
