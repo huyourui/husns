@@ -1328,7 +1328,7 @@ function createEditModal() {
         '<h3>编辑微博</h3>' +
         '<span class="modal-close" onclick="closeEditModal()">&times;</span>' +
         '</div>' +
-        '<form id="editForm">' +
+        '<form id="editForm" method="POST" action="' + BASE_URL + '/?r=post/edit">' +
         '<input type="hidden" name="csrf_token" value="' + csrfToken + '">' +
         '<input type="hidden" name="id" id="editPostId">' +
         '<div class="form-group">' +
