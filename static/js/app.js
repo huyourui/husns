@@ -1365,7 +1365,19 @@ window.closeEditModal = function() {
 };
 
  function submitEdit() {
-    var formData = new FormData(document.getElementById('editForm'));
+    var form = document.getElementById('editForm');
+    var formData = new FormData(form);
+    
+    var csrfInput = form.querySelector('input[name="csrf_token"]');
+    var latestToken = '';
+    if (typeof window.CSRF_TOKEN !== 'undefined' && window.CSRF_TOKEN) {
+        latestToken = window.CSRF_TOKEN;
+    } else if (csrfInput) {
+        latestToken = csrfInput.value;
+    }
+    if (latestToken) {
+        formData.set('csrf_token', latestToken);
+    }
     
     fetch(BASE_URL + '/?r=post/edit', {
         method: 'POST',

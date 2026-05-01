@@ -160,7 +160,7 @@
                 <h3><?php echo $this->t('post.edit_post'); ?></h3>
                 <span class="modal-close" onclick="closeEditModal()">&times;</span>
             </div>
-            <form id="editForm">
+            <form id="editForm" method="POST" action="<?php echo Helper::url('post/edit'); ?>">
                 <input type="hidden" name="csrf_token" value="<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>">
                 <input type="hidden" name="id" id="editPostId">
                 <div class="form-group">
