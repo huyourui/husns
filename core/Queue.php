@@ -142,9 +142,8 @@ class Queue
     
     /**
      * 获取下一个待处理任务
-     * 
-     * @param string $queue 队列名称
-     * @return array|null 任务数据或null
+     * 使用原子UPDATE替代SELECT FOR UPDATE，避免行锁争用
+     * 原理：先通过UPDATE原子性地抢占任务，再SELECT获取任务数据
      */
     public static function pop($queue = self::DEFAULT_QUEUE)
     {
@@ -152,36 +151,39 @@ class Queue
         
         $now = time();
         
-        $sql = "SELECT * FROM __PREFIX__queue_jobs 
-                WHERE queue = ? 
-                AND status = ? 
-                AND available_at <= ? 
-                ORDER BY priority DESC, created_at ASC 
-                LIMIT 1 FOR UPDATE";
-        
         try {
-            self::$db->beginTransaction();
+            $subSql = "SELECT id FROM __PREFIX__queue_jobs 
+                       WHERE queue = ? AND status = ? AND available_at <= ? 
+                       ORDER BY priority DESC, created_at ASC 
+                       LIMIT 1";
             
-            $job = self::$db->fetch($sql, [$queue, self::STATUS_PENDING, $now]);
+            $updateSql = "UPDATE __PREFIX__queue_jobs 
+                          SET status = ?, started_at = ?, reserved_at = ? 
+                          WHERE id = ({$subSql}) AND status = ?";
             
-            if (!$job) {
-                self::$db->commit();
+            $affected = self::$db->query($updateSql, [
+                self::STATUS_PROCESSING, $now, $now,
+                $queue, self::STATUS_PENDING, $now,
+                self::STATUS_PENDING
+            ])->rowCount();
+            
+            if ($affected === 0) {
                 return null;
             }
             
-            self::$db->update('queue_jobs', [
-                'status' => self::STATUS_PROCESSING,
-                'started_at' => time(),
-                'reserved_at' => time()
-            ], 'id = ?', [$job['id']]);
+            $job = self::$db->fetch(
+                "SELECT * FROM __PREFIX__queue_jobs WHERE status = ? AND reserved_at = ? ORDER BY id DESC LIMIT 1",
+                [self::STATUS_PROCESSING, $now]
+            );
             
-            self::$db->commit();
+            if (!$job) {
+                return null;
+            }
             
             $job['payload'] = json_decode($job['payload'], true);
             return $job;
             
         } catch (Exception $e) {
-            self::$db->rollBack();
             return null;
         }
     }

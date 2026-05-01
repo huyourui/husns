@@ -20,6 +20,19 @@ class UserController extends Controller
         $this->notificationModel = new NotificationModel();
     }
 
+    /**
+     * 格式化隐藏内容（在 parseContent 之后调用）
+     */
+    private function formatHideContent($content, $postId, $userId, $postAuthorId)
+    {
+        $postModel = new PostModel();
+        $hideTagAdminOnly = Setting::isHideTagAdminOnly();
+        if ($hideTagAdminOnly && !$postModel->isUserAdmin($postAuthorId)) {
+            return str_replace(['[hide]', '[/hide]'], ['&#91;hide&#93;', '&#91;/hide&#93;'], $content);
+        }
+        return $postModel->parseHideContent($content, $postId, $userId, $postAuthorId);
+    }
+
     public function login()
     {
         if (isset($_SESSION['user_id'])) {
@@ -71,21 +84,24 @@ class UserController extends Controller
         $this->render('user/login');
     }
 
+    /**
+     * 设置记住登录Cookie
+     * Token使用SHA-256哈希后存储到数据库，Cookie中保存明文Token供客户端使用
+     */
     private function setRememberCookie($userId)
     {
         $token = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $token);
         $expires = time() + 30 * 24 * 3600;
         
         $this->userModel->update($userId, [
-            'remember_token' => $token,
+            'remember_token' => $tokenHash,
             'updated_at' => time()
         ]);
         
-        // 使用安全的Cookie设置
         $isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
         
         if (PHP_VERSION_ID >= 70300) {
-            // PHP 7.3+ 支持数组形式的cookie选项
             setcookie('remember_token', $userId . ':' . $token, [
                 'expires' => $expires,
                 'path' => '/',
@@ -94,7 +110,6 @@ class UserController extends Controller
                 'samesite' => 'Lax'
             ]);
         } else {
-            // PHP 7.2及以下版本
             setcookie('remember_token', $userId . ':' . $token, $expires, '/', '', $isSecure, true);
         }
     }
@@ -346,6 +361,7 @@ class UserController extends Controller
         $posts = $postModel->getUserPosts($userId, $page);
         foreach ($posts['items'] as &$post) {
             $post['content'] = Helper::parseContent($post['content']);
+            $post['content'] = $this->formatHideContent($post['content'], $post['id'], $currentUserId, $post['user_id']);
         }
         unset($post);
 

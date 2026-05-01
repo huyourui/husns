@@ -1,3 +1,21 @@
+(function() {
+    var originalFetch = window.fetch;
+    window.fetch = function() {
+        return originalFetch.apply(this, arguments).then(function(response) {
+            var originalJson = response.json;
+            response.json = function() {
+                return originalJson.call(response).then(function(data) {
+                    if (data && data.csrf_token && typeof window.updateCsrfToken === 'function') {
+                        window.updateCsrfToken(data.csrf_token);
+                    }
+                    return data;
+                });
+            };
+            return response;
+        });
+    };
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     var publishForm = document.getElementById('publishForm');
     var imageUpload = document.getElementById('imageUpload');
@@ -1680,3 +1698,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+/**
+ * 更新页面中所有CSRF Token
+ * 在AJAX响应返回新Token时调用，确保后续请求使用轮换后的Token
+ */
+window.updateCsrfToken = function(newToken) {
+    if (!newToken) return;
+    document.querySelectorAll('input[name="csrf_token"]').forEach(function(input) {
+        input.value = newToken;
+    });
+    if (typeof CSRF_TOKEN !== 'undefined') {
+        window.CSRF_TOKEN = newToken;
+    }
+};

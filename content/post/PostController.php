@@ -56,11 +56,13 @@ class IndexController extends Controller
         $pinnedPost = $this->postModel->getPinnedPostForDisplay($userId ? $userId : 0);
         if ($pinnedPost) {
             $pinnedPost['content'] = Helper::parseContent($pinnedPost['content']);
+            $pinnedPost['content'] = $this->formatHideContent($pinnedPost['content'], $pinnedPost['id'], $userId, $pinnedPost['user_id']);
         }
         
         $posts = $this->postModel->getTimeline($page, $pageSize, $userId, $tab);
         foreach ($posts as &$post) {
             $post['content'] = Helper::parseContent($post['content']);
+            $post['content'] = $this->formatHideContent($post['content'], $post['id'], $userId, $post['user_id']);
         }
         unset($post);
         
@@ -117,6 +119,19 @@ class IndexController extends Controller
             'user' => $user
         ];
     }
+
+    /**
+     * 格式化隐藏内容（在 parseContent 之后调用）
+     * 根据 hideTagAdminOnly 设置和用户评论状态决定隐藏内容的展示方式
+     */
+    private function formatHideContent($content, $postId, $userId, $postAuthorId)
+    {
+        $hideTagAdminOnly = Setting::isHideTagAdminOnly();
+        if ($hideTagAdminOnly && !$this->postModel->isUserAdmin($postAuthorId)) {
+            return str_replace(['[hide]', '[/hide]'], ['&#91;hide&#93;', '&#91;/hide&#93;'], $content);
+        }
+        return $this->postModel->parseHideContent($content, $postId, $userId, $postAuthorId);
+    }
 }
 
 class PostController extends Controller
@@ -129,6 +144,19 @@ class PostController extends Controller
         parent::__construct();
         $this->postModel = new PostModel();
         $this->userModel = new UserModel();
+    }
+
+    /**
+     * 格式化隐藏内容（在 parseContent 之后调用）
+     * 根据 hideTagAdminOnly 设置和用户评论状态决定隐藏内容的展示方式
+     */
+    private function formatHideContent($content, $postId, $userId, $postAuthorId)
+    {
+        $hideTagAdminOnly = Setting::isHideTagAdminOnly();
+        if ($hideTagAdminOnly && !$this->postModel->isUserAdmin($postAuthorId)) {
+            return str_replace(['[hide]', '[/hide]'], ['&#91;hide&#93;', '&#91;/hide&#93;'], $content);
+        }
+        return $this->postModel->parseHideContent($content, $postId, $userId, $postAuthorId);
     }
 
     public function publish()
@@ -219,19 +247,8 @@ class PostController extends Controller
             $username = htmlspecialchars($user['username']);
             $profileUrl = Helper::url('user/profile?id=' . $user['id']);
             
-            $formattedContent = Security::escape($post['content']);
-            $formattedContent = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $formattedContent);
-            $formattedContent = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $formattedContent);
-            $formattedContent = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $formattedContent);
-            $formattedContent = Helper::parseEmojis($formattedContent);
-            
-            $hideTagAdminOnly = Setting::isHideTagAdminOnly();
-            $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'];
-            if ($hideTagAdminOnly && !$isAdmin) {
-                $formattedContent = str_replace(['[hide]', '[/hide]'], ['&#91;hide&#93;', '&#91;/hide&#93;'], $formattedContent);
-            } else {
-                $formattedContent = $this->postModel->parseHideContent($formattedContent, $postId, $_SESSION['user_id'], $_SESSION['user_id']);
-            }
+            $formattedContent = Helper::parseContent($post['content']);
+            $formattedContent = $this->formatHideContent($formattedContent, $postId, $_SESSION['user_id'], $_SESSION['user_id']);
             
             $html = '<div class="post-item" data-id="' . $postId . '">';
             $html .= '<div class="post-avatar"><a href="' . $profileUrl . '">' . $avatar . '</a></div>';
@@ -320,14 +337,10 @@ class PostController extends Controller
             $this->redirect(Helper::url());
         }
 
-        $post['formatted_content'] = Security::escape($post['content']);
-        $post['formatted_content'] = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $post['formatted_content']);
-        $post['formatted_content'] = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $post['formatted_content']);
-        $post['formatted_content'] = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $post['formatted_content']);
-        $post['formatted_content'] = Helper::parseEmojis($post['formatted_content']);
+        $post['formatted_content'] = Helper::parseContent($post['content']);
         
         $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
-        $post['formatted_content'] = $this->postModel->parseHideContent($post['formatted_content'], $id, $userId, $post['user_id']);
+        $post['formatted_content'] = $this->formatHideContent($post['formatted_content'], $id, $userId, $post['user_id']);
 
         $comments = $this->postModel->getComments($id);
         $isLiked = isset($_SESSION['user_id']) ? $this->postModel->isLiked($id, $_SESSION['user_id']) : false;
@@ -437,11 +450,7 @@ class PostController extends Controller
 
         $updatedPost = $this->postModel->getPost($id, $_SESSION['user_id']);
         
-        $formattedContent = Security::escape($updatedPost['content']);
-        $formattedContent = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $formattedContent);
-        $formattedContent = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $formattedContent);
-        $formattedContent = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $formattedContent);
-        $formattedContent = Helper::parseEmojis($formattedContent);
+        $formattedContent = Helper::parseContent($updatedPost['content']);
         
         Helper::jsonSuccess([
             'content' => $formattedContent,
@@ -782,12 +791,8 @@ class PostController extends Controller
             
             $post = $this->postModel->getPost($postId, $_SESSION['user_id']);
             if ($post && preg_match('/\[hide\].*?\[\/hide\]/is', $post['content'])) {
-                $formattedContent = Security::escape($post['content']);
-                $formattedContent = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $formattedContent);
-                $formattedContent = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|$)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $formattedContent);
-                $formattedContent = preg_replace('/(https?:\/\/[^\s<]+)/i', '<a href="$1" target="_blank" rel="noopener">$1</a>', $formattedContent);
-                $formattedContent = Helper::parseEmojis($formattedContent);
-                $formattedContent = $this->postModel->parseHideContent($formattedContent, $postId, $_SESSION['user_id'], $post['user_id']);
+                $formattedContent = Helper::parseContent($post['content']);
+                $formattedContent = $this->formatHideContent($formattedContent, $postId, $_SESSION['user_id'], $post['user_id']);
                 $responseData['post_content'] = $formattedContent;
             }
             
@@ -938,10 +943,8 @@ class PostController extends Controller
             $post['attachments'] = is_array($post['attachments']) ? $post['attachments'] : ($post['attachments'] ? json_decode($post['attachments'], true) : []);
             $post['videos'] = is_array($post['videos']) ? $post['videos'] : ($post['videos'] ? json_decode($post['videos'], true) : []);
             $post['time_ago'] = Helper::formatTime($post['created_at']);
-            $post['content'] = Security::escape($post['content']);
-            $post['content'] = preg_replace('/#(.+?)#/', '<a href="' . Helper::url('post/topic?keyword=$1') . '">#$1#</a>', $post['content']);
-            $post['content'] = preg_replace('/@([a-zA-Z0-9_\x{4e00}-\x{9fa5}]+)(?=\s|:|$|\/\/)/u', '<a href="' . Helper::url('user/profile?username=$1') . '">@$1</a>', $post['content']);
-            $post['content'] = Helper::parseEmojis($post['content']);
+            $post['content'] = Helper::parseContent($post['content']);
+            $post['content'] = $this->formatHideContent($post['content'], $post['id'], $userId, $post['user_id']);
             
             if ($userId) {
                 $post['is_liked'] = $this->postModel->isLiked($post['id'], $userId);
@@ -1001,6 +1004,7 @@ class PostController extends Controller
         $posts = $this->postModel->getPostsByTopic($keyword, $page, $pageSize);
         foreach ($posts as &$post) {
             $post['content'] = Helper::parseContent($post['content']);
+            $post['content'] = $this->formatHideContent($post['content'], $post['id'], $userId, $post['user_id']);
         }
         unset($post);
         
@@ -1032,6 +1036,7 @@ class PostController extends Controller
         $posts = $this->postModel->getFeaturedPosts($page, $pageSize);
         foreach ($posts as &$post) {
             $post['content'] = Helper::parseContent($post['content']);
+            $post['content'] = $this->formatHideContent($post['content'], $post['id'], $userId, $post['user_id']);
         }
         unset($post);
         

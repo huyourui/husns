@@ -222,8 +222,6 @@ class PostModel extends Model
             $post['attachments'] = is_array($post['attachments']) ? $post['attachments'] : ($post['attachments'] ? json_decode($post['attachments'], true) : []);
             $post['videos'] = is_array($post['videos']) ? $post['videos'] : ($post['videos'] ? json_decode($post['videos'], true) : []);
             $post['time_ago'] = Helper::formatTime($post['created_at']);
-            // 注意：内容解析在控制器中进行，Model层只返回原始内容
-            $post['content'] = $this->parseHideContent($post['content'], $id, $currentUserId, $post['user_id']);
         } else {
             $post = ['deleted' => true];
         }
@@ -593,31 +591,15 @@ class PostModel extends Model
     private function formatPosts($posts)
     {
         $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
-        $hideTagAdminOnly = Setting::isHideTagAdminOnly();
         
         $formattedPosts = [];
         foreach ($posts as $post) {
             $post['images'] = is_array($post['images']) ? $post['images'] : ($post['images'] ? json_decode($post['images'], true) : []);
             $post['time_ago'] = Helper::formatTime($post['created_at']);
             $post['content'] = ltrim($post['content']);
-            // 注意：内容解析在控制器中进行，Model层只返回原始内容
-            // 这样可以支持不同端使用不同的链接格式
             
             $post['attachments'] = is_array($post['attachments']) ? $post['attachments'] : ($post['attachments'] ? json_decode($post['attachments'], true) : []);
             $post['videos'] = is_array($post['videos']) ? $post['videos'] : ($post['videos'] ? json_decode($post['videos'], true) : []);
-            
-            $parseHide = true;
-            if ($hideTagAdminOnly) {
-                $authorIsAdmin = $this->isUserAdmin($post['user_id']);
-                if (!$authorIsAdmin) {
-                    $parseHide = false;
-                    $post['content'] = str_replace(['[hide]', '[/hide]'], ['&#91;hide&#93;', '&#91;/hide&#93;'], $post['content']);
-                }
-            }
-            
-            if ($parseHide) {
-                $post['content'] = $this->parseHideContent($post['content'], $post['id'], $userId, $post['user_id']);
-            }
             
             if (!empty($post['repost_id'])) {
                 $post['original_post'] = $this->getOriginalPost($post['repost_id'], $userId);
@@ -629,7 +611,7 @@ class PostModel extends Model
         return $formattedPosts;
     }
     
-    private function isUserAdmin($userId)
+    public function isUserAdmin($userId)
     {
         $sql = "SELECT is_admin FROM __PREFIX__users WHERE id = ?";
         $result = $this->db->fetch($sql, [$userId]);

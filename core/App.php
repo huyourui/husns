@@ -122,6 +122,11 @@ class App
         exit;
     }
 
+    /**
+     * Cookie自动登录
+     * 安全机制：Token使用SHA-256哈希存储，验证时使用hash_equals防止时序攻击
+     * 兼容旧版明文Token，验证成功后自动升级为哈希存储
+     */
     private function autoLogin()
     {
         if (isset($_SESSION['user_id'])) {
@@ -147,7 +152,20 @@ class App
         $userModel = new UserModel();
         $user = $userModel->find($userId);
 
-        if (!$user || $user['status'] != 1 || $user['remember_token'] !== $token) {
+        if (!$user || $user['status'] != 1) {
+            setcookie('remember_token', '', time() - 3600, '/');
+            return;
+        }
+
+        $tokenHash = hash('sha256', $token);
+        $isValid = hash_equals($user['remember_token'], $tokenHash);
+
+        if (!$isValid && hash_equals($user['remember_token'], $token)) {
+            $isValid = true;
+            $userModel->update($userId, ['remember_token' => $tokenHash]);
+        }
+
+        if (!$isValid) {
             setcookie('remember_token', '', time() - 3600, '/');
             return;
         }

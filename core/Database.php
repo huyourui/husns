@@ -36,11 +36,10 @@ class Database
         try {
             $this->pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
-            if (defined('SITE_DEBUG') && SITE_DEBUG) {
-                die('数据库连接失败：' . $e->getMessage());
-            } else {
-                die('数据库连接失败，请检查配置');
-            }
+            $message = defined('SITE_DEBUG') && SITE_DEBUG 
+                ? '数据库连接失败：' . $e->getMessage() 
+                : '数据库连接失败，请检查配置';
+            throw new DatabaseException($message, 0, $e);
         }
     }
 

@@ -116,10 +116,18 @@ class Security
         return $data;
     }
 
+    /**
+     * SQL注入检测（已废弃）
+     * 
+     * @deprecated 3.6.7 此方法基于正则黑名单，过于粗暴且容易误杀正常内容。
+     *             项目已全面使用 PDO 预处理语句，SQL注入防护由预处理机制保障，无需此方法。
+     *             将在未来版本中移除。
+     * @param string $string 待检测字符串
+     * @return bool
+     */
     public static function sqlInjectCheck($string)
     {
-        $check = preg_match('/select|insert|update|delete|union|into|load_file|outfile|or|and/i', $string);
-        return $check ? false : true;
+        return true;
     }
 
     public static function validateEmail($email)

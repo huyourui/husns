@@ -111,6 +111,7 @@ class MobileApiController extends Controller
             ($post['attachments'] ? json_decode($post['attachments'], true) : []);
         $post['time_ago'] = Helper::formatTime($post['created_at']);
         $post['content'] = Helper::parseContent($post['content']);
+        $post['content'] = $this->formatHideContent($post['content'], $post['id'], $userId, $post['user_id']);
         
         $post['is_liked'] = false;
         $post['is_favorited'] = false;
@@ -147,9 +148,22 @@ class MobileApiController extends Controller
             ($post['videos'] ? json_decode($post['videos'], true) : []);
         $post['time_ago'] = Helper::formatTime($post['created_at']);
         $post['content'] = Helper::parseContent($post['content']);
+        $post['content'] = $this->formatHideContent($post['content'], $post['id'], null, $post['user_id']);
         $post['avatar'] = Helper::avatar($post['avatar'] ?? null, $post['username']);
         
         return $post;
+    }
+
+    /**
+     * 格式化隐藏内容（在 parseContent 之后调用）
+     */
+    private function formatHideContent($content, $postId, $userId, $postAuthorId)
+    {
+        $hideTagAdminOnly = Setting::isHideTagAdminOnly();
+        if ($hideTagAdminOnly && !$this->postModel->isUserAdmin($postAuthorId)) {
+            return str_replace(['[hide]', '[/hide]'], ['&#91;hide&#93;', '&#91;/hide&#93;'], $content);
+        }
+        return $this->postModel->parseHideContent($content, $postId, $userId, $postAuthorId);
     }
 
     private function formatUser($user, $currentUserId = null)

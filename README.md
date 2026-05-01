@@ -228,6 +228,24 @@ php tests/run.php Helper
 
 ## 更新日志
 
+### v3.6.7 (2026-05-01)
+- 🔒 **安全加固**
+  - CSRF Token 验证后自动轮换，防止重放攻击
+  - 自动登录 Token 使用 SHA-256 哈希存储，防止数据库泄露后 Token 被滥用
+  - 自动登录验证使用 hash_equals() 防止时序攻击
+  - 兼容旧版明文 Token，自动升级为哈希存储
+- 🐛 **Bug修复**
+  - 修复隐藏内容 [hide] 标签的 HTML 被 parseContent() 二次转义导致显示异常的问题
+  - 统一所有页面内容解析逻辑，消除正则表达式不一致问题
+- 🔧 **代码优化**
+  - 废弃 sqlInjectCheck() 方法（项目已全面使用 PDO 预处理，该方法无实际意义）
+  - 统一 PostController 中 5 处重复的手动内容解析代码为 Helper::parseContent()
+  - 修复 Model/Controller 层 parseHideContent 职责边界不一致问题
+  - 新增类型安全的输入获取方法：getInt()、postInt()、getBool()、postBool()
+  - 队列系统使用原子 UPDATE 替代 SELECT FOR UPDATE，避免行锁争用
+  - 数据库连接失败抛出 DatabaseException 替代 die()，统一异常处理策略
+  - JSON 响应自动附带新 CSRF Token，前端自动更新
+
 ### v3.6.6 (2026-04-19)
 - 🐛 **Bug修复**
   - 修复后台管理 500 错误问题

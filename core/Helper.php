@@ -100,6 +100,10 @@ class Helper
         return bin2hex(random_bytes(32));
     }
 
+    /**
+     * 生成CSRF防护隐藏字段
+     * 每次调用时如果token不存在则自动生成
+     */
     public static function csrfField()
     {
         if (!isset($_SESSION['csrf_token'])) {
@@ -108,6 +112,10 @@ class Helper
         return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($_SESSION['csrf_token']) . '">';
     }
 
+    /**
+     * 验证CSRF Token
+     * 验证成功后自动轮换Token，防止重放攻击
+     */
     public static function verifyCsrf()
     {
         if (!isset($_SESSION['csrf_token'])) {
@@ -115,7 +123,11 @@ class Helper
         }
         $token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
         $headerToken = isset($_SERVER['HTTP_X_CSRF_TOKEN']) ? $_SERVER['HTTP_X_CSRF_TOKEN'] : '';
-        return hash_equals($_SESSION['csrf_token'], $token) || hash_equals($_SESSION['csrf_token'], $headerToken);
+        $valid = hash_equals($_SESSION['csrf_token'], $token) || hash_equals($_SESSION['csrf_token'], $headerToken);
+        if ($valid) {
+            $_SESSION['csrf_token'] = self::generateToken();
+        }
+        return $valid;
     }
 
     public static function json($data, $code = 200)
@@ -131,12 +143,20 @@ class Helper
 
     public static function jsonSuccess($data = null, $message = '操作成功')
     {
-        self::json(['code' => 0, 'message' => $message, 'data' => $data]);
+        $response = ['code' => 0, 'message' => $message, 'data' => $data];
+        if (isset($_SESSION['csrf_token'])) {
+            $response['csrf_token'] = $_SESSION['csrf_token'];
+        }
+        self::json($response);
     }
 
     public static function jsonError($message = '操作失败', $code = 1)
     {
-        self::json(['code' => $code, 'message' => $message, 'data' => null]);
+        $response = ['code' => $code, 'message' => $message, 'data' => null];
+        if (isset($_SESSION['csrf_token'])) {
+            $response['csrf_token'] = $_SESSION['csrf_token'];
+        }
+        self::json($response);
     }
 
     /**
@@ -199,6 +219,40 @@ class Helper
     public static function post($key, $default = '')
     {
         return isset($_POST[$key]) ? $_POST[$key] : $default;
+    }
+
+    /**
+     * 获取GET参数并强制转换为整数
+     */
+    public static function getInt($key, $default = 0)
+    {
+        return isset($_GET[$key]) ? (int)$_GET[$key] : $default;
+    }
+
+    /**
+     * 获取POST参数并强制转换为整数
+     */
+    public static function postInt($key, $default = 0)
+    {
+        return isset($_POST[$key]) ? (int)$_POST[$key] : $default;
+    }
+
+    /**
+     * 获取GET参数并强制转换为布尔值
+     */
+    public static function getBool($key, $default = false)
+    {
+        if (!isset($_GET[$key])) return $default;
+        return filter_var($_GET[$key], FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * 获取POST参数并强制转换为布尔值
+     */
+    public static function postBool($key, $default = false)
+    {
+        if (!isset($_POST[$key])) return $default;
+        return filter_var($_POST[$key], FILTER_VALIDATE_BOOLEAN);
     }
 
     public static function setFlash($type, $message)

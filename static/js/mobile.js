@@ -355,4 +355,30 @@
     window.previewImages = function(input) {
         M.previewImage(input);
     };
+
+    window.updateCsrfToken = function(newToken) {
+        if (!newToken) return;
+        document.querySelectorAll('input[name="csrf_token"]').forEach(function(input) {
+            input.value = newToken;
+        });
+        if (typeof CSRF_TOKEN !== 'undefined') {
+            window.CSRF_TOKEN = newToken;
+        }
+    };
+
+    var originalFetch = window.fetch;
+    window.fetch = function() {
+        return originalFetch.apply(this, arguments).then(function(response) {
+            var originalJson = response.json;
+            response.json = function() {
+                return originalJson.call(response).then(function(data) {
+                    if (data && data.csrf_token && typeof window.updateCsrfToken === 'function') {
+                        window.updateCsrfToken(data.csrf_token);
+                    }
+                    return data;
+                });
+            };
+            return response;
+        });
+    };
 })();
